@@ -28,7 +28,6 @@
 }
 
 
-/* Main container for our custom marker content (icon + label) */
 .marker-container {
     display: flex;
     align-items: center;

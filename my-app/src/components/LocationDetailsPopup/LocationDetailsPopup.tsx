@@ -36,7 +36,6 @@ export const LocationDetailsPopup = ({ data }: Props) => {
 
     return (
         <Box sx={popupContentStyle}>
-            {/* Header */}
             <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1.5}>
                 <Typography variant="h6" sx={headerStyle}>
                     {data.type} Point
@@ -50,7 +49,6 @@ export const LocationDetailsPopup = ({ data }: Props) => {
 
             <Divider />
 
-            {/* Coordinates Section */}
             <Box mt={1.5}>
                 <Stack spacing={1}>
                     <Stack direction="row" justifyContent="space-between">

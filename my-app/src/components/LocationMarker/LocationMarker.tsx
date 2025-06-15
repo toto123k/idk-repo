@@ -34,9 +34,9 @@ const createMarkerIcon = (data: LocationData) => {
     return L.divIcon({
         html,
         className: 'marker-div-icon',
-        iconSize: [85, 28], // Adjusted size for new label and padding
-        iconAnchor: [14, 14], // Center of the circular icon
-        popupAnchor: [0, -14], // Position popup nicely above the icon
+        iconSize: [85, 28],
+        iconAnchor: [14, 14],
+        popupAnchor: [0, -14],
     })
 }
 
@@ -44,9 +44,8 @@ interface LocationMarkerProps {
     data: LocationData
 }
 
-const LocationMarker: React.FC<LocationMarkerProps> = ({ data }) => {
+export const LocationMarker: React.FC<LocationMarkerProps> = ({ data }) => {
     const markerRef = useRef<L.Marker>(null)
-    // State to manage position changes from dragging
     const [currentData, setCurrentData] = useState<LocationData>(data)
 
     const handleDragEnd = useCallback(() => {
@@ -69,11 +68,9 @@ const LocationMarker: React.FC<LocationMarkerProps> = ({ data }) => {
             }}
         >
             <Popup>
-                {/* The popup now uses the potentially updated data */}
                 <LocationDetailsPopup data={currentData} />
             </Popup>
         </Marker>
     )
 }
 
-export default LocationMarker;
