@@ -10,16 +10,24 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@mui/icons-material": "^7.1.1",
+    "@mui/material": "^7.1.1",
     "leaflet": "^1.9.4",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "react-leaflet": "^5.0.0"
+    "react-leaflet": "^5.0.0",
+    "react-leaflet-markercluster": "^5.0.0-rc.0",
+    "utm": "^1.1.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.25.0",
     "@types/leaflet": "^1.9.18",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
+    "@types/react-leaflet-markercluster": "^3.0.4",
+    "@types/utm": "^1.1.4",
     "@vitejs/plugin-react": "^4.4.1",
     "eslint": "^9.25.0",
     "eslint-plugin-react-hooks": "^5.2.0",
