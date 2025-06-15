@@ -6,7 +6,6 @@ import { MapContainer, TileLayer } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css';
 
 function App() {
-  const [count, setCount] = useState(0)
 
   return (
     <>
