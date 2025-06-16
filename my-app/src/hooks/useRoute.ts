@@ -1,4 +1,3 @@
-// src/hooks/useRoute.ts
 import { useState, useEffect } from 'react'
 import type { LatLngTuple } from '../types'
 import { api } from '../api/api'
