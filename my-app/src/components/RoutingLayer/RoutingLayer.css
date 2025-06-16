@@ -1,0 +1,9 @@
+.polyline-outline {
+    /*
+      Create a 1px stroke effect using 4 drop-shadows.
+      You can increase the pixel value (e.g., 2px) for a thicker outline.
+      The color (black) can also be changed.
+    */
+    filter:
+        drop-shadow(1px 1px 0px black) drop-shadow(-1px -1px 0px black) drop-shadow(1px -1px 0px black) drop-shadow(-1px 1px 0px black);
+}

@@ -1,11 +1,13 @@
 import { useMemo } from 'react'
 import { ToastContainer } from 'react-toastify'
-import { ThemeProvider, createTheme, CssBaseline } from '@mui/material'
+import { ThemeProvider, createTheme, CssBaseline, Box } from '@mui/material'
 import { MapShell } from './components/MapShell/MapShell'
 import type { LatLngTuple } from './types'
 import { RoutingLayer } from './components/RoutingLayer/RoutingLayer'
 import { MapLayerControlPanel } from './components/MapLayerControlPanel/MapLayerControlPanel'
 import { AttributionControl, ZoomControl } from 'react-leaflet'
+import type { SxProps, Theme } from '@mui/material/styles';
+import { AddWaypointButton } from './components/AddWaypointButton/AddWaypointButton'
 
 // A basic MUI theme instance
 const theme = createTheme({
@@ -26,6 +28,16 @@ export const App = () => {
     []
   )
 
+  const topLeftContainerSx: SxProps<Theme> = {
+    position: 'absolute',
+    top: (theme) => theme.spacing(2),
+    left: (theme) => theme.spacing(2),
+    zIndex: (theme) => theme.zIndex.tooltip,
+    display: "flex",
+    flexDirection: "column",
+    gap: 1
+  }
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -39,7 +51,12 @@ export const App = () => {
 
       <MapShell center={center} zoom={9}>
         <RoutingLayer initialSource={INITIAL_SOURCE} initialTarget={INITIAL_TARGET} />
-        <MapLayerControlPanel />
+        <Box sx={
+          topLeftContainerSx
+        }>
+          <MapLayerControlPanel />
+          <AddWaypointButton />
+        </Box>
         <AttributionControl position="topright" />
         <ZoomControl position='bottomleft' />
 

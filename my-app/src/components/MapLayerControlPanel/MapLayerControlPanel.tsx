@@ -9,10 +9,6 @@ import { AddLayerModal } from './AddLayerModal/AddLayerModal';
 import type { SxProps, Theme } from '@mui/material/styles';
 
 const panelSx: SxProps<Theme> = {
-    position: 'absolute',
-    top: (theme) => theme.spacing(2),
-    left: (theme) => theme.spacing(2),
-    zIndex: (theme) => theme.zIndex.tooltip,
     backgroundColor: 'background.paper',
     p: 1.5,
     borderRadius: 1,

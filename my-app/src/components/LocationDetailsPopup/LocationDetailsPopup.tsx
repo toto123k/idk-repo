@@ -1,50 +1,58 @@
-import { Box, Chip, Divider, Stack, Typography } from '@mui/material';
-import { fromLatLon } from 'utm';
-import { type LocationData } from '../../types/types';
+import { Box, Chip, Divider, Stack, Typography } from '@mui/material'
+import { fromLatLon } from 'utm'
+import { type LocationData } from '../../types/types'
 
 const popupContentStyle = {
     padding: '8px 16px',
     minWidth: '280px',
     fontFamily: 'sans-serif',
-};
+}
 
 const headerStyle = {
     fontWeight: 'bold',
     textTransform: 'capitalize',
-};
+}
 
 const coordinateLabelStyle = {
     fontWeight: 500,
     color: 'text.secondary',
-};
+}
 
 const coordinateValueStyle = {
     color: 'text.primary',
     textAlign: 'right',
     marginLeft: 2,
-};
+}
 
 interface Props {
-    data: LocationData;
+    data: LocationData
 }
 
 export const LocationDetailsPopup = ({ data }: Props) => {
     const { easting, northing, zoneNum, zoneLetter } = fromLatLon(
         data.position[0],
         data.position[1]
-    );
+    )
+
+    const chipColor =
+        data.type === 'source'
+            ? 'primary'
+            : data.type === 'target'
+                ? 'error'
+                : 'warning' // waypoint
+
+    const title =
+        data.type === 'waypoint' && data.order !== undefined
+            ? `Waypoint #${data.order}`
+            : `${data.type} Point`
 
     return (
         <Box sx={popupContentStyle}>
             <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1.5}>
                 <Typography variant="h6" sx={headerStyle}>
-                    {data.type} Point
+                    {title}
                 </Typography>
-                <Chip
-                    label={data.type.toUpperCase()}
-                    color={data.type === 'source' ? 'primary' : 'error'}
-                    size="small"
-                />
+                <Chip label={data.type.toUpperCase()} color={chipColor} size="small" />
             </Stack>
 
             <Divider />
@@ -62,5 +70,5 @@ export const LocationDetailsPopup = ({ data }: Props) => {
                 </Stack>
             </Box>
         </Box>
-    );
-};
+    )
+}

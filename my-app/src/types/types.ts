@@ -1,6 +1,9 @@
+export type LocationType = 'source' | 'target' | 'waypoint'
+
 export interface LocationData {
-    type: 'source' | 'target';
-    position: [number, number];
+    type: LocationType
+    position: [number, number]
+    order?: number // only relevant for waypoints
 }
 
 // Define the structure for a map layer

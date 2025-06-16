@@ -31,7 +31,7 @@ export const LocationMarker: React.FC<Props> = ({
     return (
         <Marker
             position={currentData.position}
-            icon={createDivIcon(currentData.type)}
+            icon={createDivIcon(currentData)}
             draggable
             ref={markerRef}
             eventHandlers={{ dragend: onDragEnd }}

@@ -1,70 +1,74 @@
-import axios from 'axios'
-import type { LatLngTuple, RouteResponse } from '../types'
+import axios from 'axios';
+import type { LatLngTuple } from '../types'; // Assuming this is [lat, lng]
 
+// Assuming RouteResponse is defined in your types file, e.g.:
+// export interface RouteResponse {
+//   route: [number, number][]; // Array of [lng, lat]
+// }
+import type { RouteResponse } from '../types';
 
+// The API now expects a list of coordinates in the body
+interface ApiRouteRequestPayload {
+    coordinates: {
+        lat: number;
+        lon: number;
+    }[];
+}
 
 class ApiService {
-    private baseURL: string
+    private baseURL: string;
 
     constructor(baseURL: string = 'http://localhost:8000') {
-        this.baseURL = baseURL
+        this.baseURL = baseURL;
     }
 
     /**
-        * Fetch route between two points using a POST request with a JSON body.
-        * @param source [lat, lng] tuple for starting point
-        * @param target [lat, lng] tuple for destination
-        * @returns Promise resolving to array of [lng, lat] coordinates
-        */
-    async fetchRoute(source: LatLngTuple, target: LatLngTuple): Promise<[number, number][]> {
+     * Fetch route between multiple points (start, waypoints, end).
+     * @param points An array of [lat, lng] tuples. Must contain at least a start and end point.
+     * @returns Promise resolving to array of [lng, lat] coordinates for the full route.
+     */
+    async fetchRoute(points: LatLngTuple[]): Promise<[number, number][]> {
+        if (points.length < 2) {
+            throw new Error("At least two points (start and end) are required to fetch a route.");
+        }
+
         try {
-            // Construct the payload to match the FastAPI Pydantic model.
-            // The source/target tuples are [lat, lng], but the API needs { lon, lat }.
-            const payload = {
-                start: {
-                    lat: source[0],
-                    lon: source[1]
-                },
-                end: {
-                    lat: target[0],
-                    lon: target[1]
-                }
+            const apiCoordinates = points.map(point => ({
+                lat: point[0],
+                lon: point[1]
+            }));
+
+            const payload: ApiRouteRequestPayload = {
+                coordinates: apiCoordinates
             };
 
-            // Use axios.post, sending the payload as the request body.
             const response = await axios.post<RouteResponse>(
                 `${this.baseURL}/route`,
-                payload, // The JSON body for the POST request
+                payload,
                 {
-                    timeout: 10000 // 10 second timeout
+                    timeout: 15000
                 }
             );
 
             if (!Array.isArray(response.data.route)) {
-                throw new Error('Invalid route data received');
+                throw new Error('Invalid route data received from server');
             }
 
-            // The API returns an array of [lng, lat] coordinates, which matches the required return type.
             return response.data.route;
 
         } catch (error) {
             if (axios.isAxiosError(error)) {
-                console.error('Route fetch failed:', error.message);
+                console.error('Route fetch API call failed:', error.message);
                 if (error.response) {
-                    // The server responded with a status code outside the 2xx range
-                    // The detail from the FastAPI HTTPException will be in error.response.data
-                    const errorDetail = JSON.stringify(error.response.data.detail) || error.response.statusText;
+                    const errorDetail = error.response.data?.detail ? JSON.stringify(error.response.data.detail) : error.response.statusText;
                     throw new Error(`Server error: ${error.response.status} - ${errorDetail}`);
                 } else if (error.request) {
-                    // The request was made but no response was received
-                    throw new Error('Network error: Unable to reach server');
+                    throw new Error('Network error: Unable to reach routing server');
                 }
             }
-            // Something else happened in setting up the request that triggered an Error
+            console.error('An unexpected error occurred during route fetch:', error);
             throw error;
         }
     }
 }
-
-// Export singleton instance
-export const api = new ApiService()
+export const api = new ApiService();
