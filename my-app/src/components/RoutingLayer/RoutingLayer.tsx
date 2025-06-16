@@ -1,4 +1,3 @@
-// src/components/RoutingLayer/RoutingLayer.tsx
 import { useAtom } from 'jotai';
 import { useHydrateAtoms } from 'jotai/utils';
 import { Polyline } from 'react-leaflet';

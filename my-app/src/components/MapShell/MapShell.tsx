@@ -1,9 +1,8 @@
-// src/components/MapShell/MapShell.tsx
-
-import { MapContainer, TileLayer, ZoomControl } from 'react-leaflet';
-import type { LatLngTuple } from '../../types';
+import { useAtom } from 'jotai';
+import { MapContainer, TileLayer} from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import { AttributionControl } from 'react-leaflet';
+import type { LatLngTuple } from '../../types';
+import { selectedMapLayerAtom } from '../../state/mapAtoms';
 
 interface MapShellProps {
     center: LatLngTuple;
@@ -12,9 +11,10 @@ interface MapShellProps {
 }
 
 export const MapShell: React.FC<MapShellProps> = ({ center, zoom, children }) => {
+    const [selectedLayer] = useAtom(selectedMapLayerAtom);
+
     return (
         <MapContainer
-            // Add this prop to remove the default attribution control
             attributionControl={false}
             doubleClickZoom={false}
             center={center}
@@ -23,11 +23,10 @@ export const MapShell: React.FC<MapShellProps> = ({ center, zoom, children }) =>
             zoomControl={false}
         >
             <TileLayer
-
-                url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+                key={selectedLayer.id}
+                attribution={selectedLayer.attribution}
+                url={selectedLayer.url}
             />
-            <AttributionControl position="topright" />
-            <ZoomControl position='topright' />
             {children}
         </MapContainer>
     );

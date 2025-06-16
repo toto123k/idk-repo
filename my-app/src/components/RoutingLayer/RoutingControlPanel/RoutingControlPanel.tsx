@@ -1,8 +1,5 @@
-// src/components/RoutingLayer/RoutingControlPanel.tsx
-import { useRef, useEffect } from 'react';
-import { Box, Button } from '@mui/material';
+import { Box } from '@mui/material';
 import type { SxProps, Theme } from '@mui/material/styles';
-import L from 'leaflet'; // <-- 1. Import leaflet
 import { FetchRouteButton } from './ActionControls/FetchRouteButton';
 
 const panelStyles: SxProps<Theme> = {

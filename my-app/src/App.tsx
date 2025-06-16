@@ -4,6 +4,8 @@ import { ThemeProvider, createTheme, CssBaseline } from '@mui/material'
 import { MapShell } from './components/MapShell/MapShell'
 import type { LatLngTuple } from './types'
 import { RoutingLayer } from './components/RoutingLayer/RoutingLayer'
+import { MapLayerControlPanel } from './components/MapLayerControlPanel/MapLayerControlPanel'
+import { AttributionControl, ZoomControl } from 'react-leaflet'
 
 // A basic MUI theme instance
 const theme = createTheme({
@@ -32,10 +34,15 @@ export const App = () => {
         position="bottom-center"
         theme={theme.palette.mode}
         hideProgressBar={false}
+        autoClose={1000}
       />
 
       <MapShell center={center} zoom={9}>
         <RoutingLayer initialSource={INITIAL_SOURCE} initialTarget={INITIAL_TARGET} />
+        <MapLayerControlPanel />
+        <AttributionControl position="topright" />
+        <ZoomControl position='bottomleft' />
+
       </MapShell>
     </ThemeProvider>
   )

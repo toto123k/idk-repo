@@ -27,7 +27,7 @@ export const useRouteToast = (loading: boolean, error: string | null) => {
                     render: 'Route loaded successfully',
                     type: 'success',
                     isLoading: false,
-                    autoClose: 3000,
+                    autoClose: 1000,
                 })
             }
             toastId.current = null

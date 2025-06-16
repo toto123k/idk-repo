@@ -21,7 +21,7 @@ export const LocationMarker: React.FC<Props> = ({
         const pos = markerRef.current?.getLatLng()
         if (pos) {
             setCurrentData(prev => {
-                const updated = { ...prev, position: [pos.lat, pos.lng] }
+                const updated = { ...prev, position: [pos.lat, pos.lng] as [number, number] }
                 onMarkerEndDrag?.(updated)
                 return updated
             })
