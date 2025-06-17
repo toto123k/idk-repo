@@ -1,5 +1,5 @@
 // src/components/CoordinatesModal.tsx
-import { FC, useState, useEffect } from 'react'
+import { type FC, useState, useEffect } from 'react'
 import {
     Dialog,
     DialogTitle,
@@ -25,7 +25,7 @@ interface CoordinatesModalProps {
     onSubmit: (coords: LatLng[]) => void
 }
 
-const CoordinatesModal: FC<CoordinatesModalProps> = ({ open, onClose, onSubmit }) => {
+export const CoordinatesModal: FC<CoordinatesModalProps> = ({ open, onClose, onSubmit }) => {
     // store user input
     const [rows, setRows] = useState<{ lat: string; lng: string }[]>([
         { lat: '', lng: '' },
@@ -134,4 +134,3 @@ const CoordinatesModal: FC<CoordinatesModalProps> = ({ open, onClose, onSubmit }
     )
 }
 
-export default CoordinatesModal

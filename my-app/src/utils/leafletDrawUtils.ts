@@ -1,10 +1,10 @@
 // src/utils/leafletDrawUtils.ts
 import L from 'leaflet';
-import 'leaflet-draw'; // Ensure types and library are loaded for L.Control.Draw
-import type { DrawHandlers } from '../state/restrictedZonesAtoms'; // Adjust path as needed
+import 'leaflet-draw';
+import type { DrawHandlers } from '../state/restrictedZonesAtoms';
 
 export const getDrawHandlers = (drawControlRef: React.MutableRefObject<L.Control.Draw | null>): DrawHandlers => {
-    const tb = drawControlRef.current?._toolbars as any; // Accessing internal property
+    const tb = drawControlRef.current?._toolbars as any; 
     const drawH = tb?.draw?._modes?.polygon?.handler;
     const editH = tb?.edit?._modes?.edit?.handler;
     const remH = tb?.edit?._modes?.remove?.handler;

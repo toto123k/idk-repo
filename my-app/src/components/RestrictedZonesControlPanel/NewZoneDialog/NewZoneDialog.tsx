@@ -16,7 +16,7 @@ interface Props {
     onByCoords: () => void
 }
 
-const NewZoneDialog: React.FC<Props> = ({
+export const NewZoneDialog: React.FC<Props> = ({
     open,
     onClose,
     onDrawOnMap,
@@ -50,4 +50,3 @@ const NewZoneDialog: React.FC<Props> = ({
     </Dialog>
 )
 
-export default NewZoneDialog

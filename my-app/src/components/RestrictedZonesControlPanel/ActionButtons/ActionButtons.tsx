@@ -1,4 +1,5 @@
 import {
+    type SxProps,
     Button,
     IconButton,
     Stack,
@@ -10,6 +11,7 @@ import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
 import CancelIcon from '@mui/icons-material/Cancel'
 import CheckIcon from '@mui/icons-material/Check'
+import type { Theme } from '@mui/material/styles'
 
 type Mode = 'idle' | 'drawing' | 'editing' | 'deleting'
 
@@ -27,8 +29,21 @@ interface Props {
     onFinishDeleting: () => void
 }
 
-const ActionButtons: React.FC<Props> = ({
+const styles = {
+    container: {
+        mb: 2,
+    } as SxProps<Theme>,
+    buttonWrapper: {
+        flex: 1,
+    },
+    messageText: {
+        flex: 1,
+    } as SxProps<Theme>,
+}
+
+export const ActionButtons: React.FC<Props> = ({
     drawingMode,
+    // isDrawing, // These props are redundant if drawingMode is the source of truth
     isDrawing,
     isEditing,
     isDeleting,
@@ -40,8 +55,7 @@ const ActionButtons: React.FC<Props> = ({
     onFinishEditing,
     onFinishDeleting,
 }) => (
-    <Stack direction="column" spacing={1} sx={{ mb: 2 }}>
-        {/* IDLE MODE: New Zone on its own row, then Edit/Delete in a row below */}
+    <Stack direction="column" spacing={1} sx={styles.container}>
         {drawingMode === 'idle' && (
             <>
                 <Tooltip title="Create new zone">
@@ -58,7 +72,7 @@ const ActionButtons: React.FC<Props> = ({
 
                 <Stack direction="row" spacing={1}>
                     <Tooltip title="Edit selected zone">
-                        <span style={{ flex: 1 }}>
+                        <span style={styles.buttonWrapper}>
                             <Button
                                 variant="outlined"
                                 size="small"
@@ -73,7 +87,7 @@ const ActionButtons: React.FC<Props> = ({
                     </Tooltip>
 
                     <Tooltip title="Delete zones">
-                        <span style={{ flex: 1 }}>
+                        <span style={styles.buttonWrapper}>
                             <Button
                                 variant="outlined"
                                 size="small"
@@ -93,7 +107,7 @@ const ActionButtons: React.FC<Props> = ({
 
         {isDrawing && (
             <Stack direction="row" spacing={1} alignItems="center">
-                <Typography variant="body2" sx={{ flex: 1 }}>
+                <Typography variant="body2" sx={styles.messageText}>
                     Click points to draw zone
                 </Typography>
                 <Tooltip title="Cancel drawing">
@@ -106,7 +120,7 @@ const ActionButtons: React.FC<Props> = ({
 
         {isEditing && (
             <Stack direction="row" spacing={1} alignItems="center">
-                <Typography variant="body2" sx={{ flex: 1 }}>
+                <Typography variant="body2" sx={styles.messageText}>
                     Drag points to edit
                 </Typography>
                 <Tooltip title="Done editing">
@@ -119,7 +133,7 @@ const ActionButtons: React.FC<Props> = ({
 
         {isDeleting && (
             <Stack direction="row" spacing={1} alignItems="center">
-                <Typography variant="body2" sx={{ flex: 1 }}>
+                <Typography variant="body2" sx={styles.messageText}>
                     Click zones to delete
                 </Typography>
                 <Tooltip title="Done deleting">
@@ -132,4 +146,3 @@ const ActionButtons: React.FC<Props> = ({
     </Stack>
 )
 
-export default ActionButtons

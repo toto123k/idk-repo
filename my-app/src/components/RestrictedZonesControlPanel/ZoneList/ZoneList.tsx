@@ -1,7 +1,7 @@
 // src/components/RestrictedZones/ZonesList.tsx
 import { List, Typography } from '@mui/material'
 import { type RestrictedZone } from '../../../state/restrictedZonesAtoms'
-import ZoneListItem from './ZoneListItem/ZoneListItem'
+import { ZoneListItem } from './ZoneListItem/ZoneListItem'
 
 type Mode = 'idle' | 'drawing' | 'editing' | 'deleting'
 
@@ -18,7 +18,7 @@ interface Props {
     onTempNameChange: (value: string) => void
 }
 
-const ZonesList: React.FC<Props> = ({
+export const ZonesList: React.FC<Props> = ({
     zones,
     selectedZoneId,
     drawingMode,
@@ -42,9 +42,10 @@ const ZonesList: React.FC<Props> = ({
             </Typography>
         )
     }
-
+    const zoneListSx = { maxHeight: 200, overflow: 'auto' };
+    
     return (
-        <List dense sx={{ maxHeight: 200, overflow: 'auto' }}>
+        <List dense sx={zoneListSx}>
             {zones.map(zone => (
                 <ZoneListItem
                     key={zone.id}
@@ -64,4 +65,3 @@ const ZonesList: React.FC<Props> = ({
     )
 }
 
-export default ZonesList

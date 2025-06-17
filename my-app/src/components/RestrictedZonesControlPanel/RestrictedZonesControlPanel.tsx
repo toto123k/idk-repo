@@ -11,12 +11,28 @@ import {
     drawHandlersAtom,
     type RestrictedZone,
 } from '../../state/restrictedZonesAtoms'
-import CoordinatesModal, { type LatLng } from '../CoordinatesModal/CoordinatesModal'
+import { CoordinatesModal, type LatLng } from '../CoordinatesModal/CoordinatesModal'
 import { Paper, Box, Divider, Collapse, Typography } from '@mui/material'
-import ActionButtons from './ActionButtons/ActionButtons'
-import NewZoneDialog from './NewZoneDialog/NewZoneDialog'
-import RestrictedZonesHeader from './RestrictedZonesHeader/RestrictedZonesHeader'
-import ZonesList from './ZoneList/ZoneList'
+import type { SxProps, Theme } from '@mui/material/styles'
+import {ActionButtons} from './ActionButtons/ActionButtons'
+import {NewZoneDialog} from './NewZoneDialog/NewZoneDialog'
+import {RestrictedZonesHeader} from './RestrictedZonesHeader/RestrictedZonesHeader'
+import {ZonesList} from './ZoneList/ZoneList'
+
+const styles = {
+    panelContainer: {
+        width: 300,
+    } as SxProps<Theme>,
+    contentBox: {
+        p: 2,
+    } as SxProps<Theme>,
+    divider: {
+        mb: 1,
+    } as SxProps<Theme>,
+    zoneCountText: {
+        mb: 1,
+    } as SxProps<Theme>,
+}
 
 export const RestrictedZonesControlPanel = () => {
     const [zones, setZones] = useAtom(restrictedZonesAtom)
@@ -115,14 +131,14 @@ export const RestrictedZonesControlPanel = () => {
 
     return (
         <>
-            <Paper elevation={3} sx={{ width: 300 }}>
+            <Paper elevation={3} sx={styles.panelContainer}>
                 <RestrictedZonesHeader
                     expanded={expanded}
                     onToggle={() => setExpanded(e => !e)}
                 />
 
                 <Collapse in={expanded}>
-                    <Box sx={{ p: 2 }}>
+                    <Box sx={styles.contentBox}>
                         <ActionButtons
                             drawingMode={drawingMode}
                             isDrawing={isDrawing}
@@ -137,12 +153,12 @@ export const RestrictedZonesControlPanel = () => {
                             onFinishDeleting={handleFinishDeleting}
                         />
 
-                        <Divider sx={{ mb: 1 }} />
+                        <Divider sx={styles.divider} />
 
                         <Typography
                             variant="body2"
                             color="text.secondary"
-                            sx={{ mb: 1 }}
+                            sx={styles.zoneCountText}
                         >
                             {zones.length} zone{zones.length !== 1 ? 's' : ''} defined
                         </Typography>
@@ -178,4 +194,3 @@ export const RestrictedZonesControlPanel = () => {
         </>
     )
 }
-

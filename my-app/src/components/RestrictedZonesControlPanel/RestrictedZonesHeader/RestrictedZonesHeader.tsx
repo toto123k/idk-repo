@@ -8,7 +8,7 @@ interface Props {
   onToggle: () => void
 }
 
-const RestrictedZonesHeader: React.FC<Props> = ({ expanded, onToggle }) => (
+export const RestrictedZonesHeader: React.FC<Props> = ({ expanded, onToggle }) => (
   <Box
     sx={{
       p: 1.5,
@@ -31,4 +31,3 @@ const RestrictedZonesHeader: React.FC<Props> = ({ expanded, onToggle }) => (
   </Box>
 )
 
-export default RestrictedZonesHeader

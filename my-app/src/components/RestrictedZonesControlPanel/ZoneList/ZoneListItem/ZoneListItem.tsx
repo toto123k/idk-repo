@@ -10,6 +10,7 @@ import {
 import EditIcon from '@mui/icons-material/Edit'
 import CheckIcon from '@mui/icons-material/Check'
 import CancelIcon from '@mui/icons-material/Cancel'
+import type { SxProps, Theme } from '@mui/material/styles'
 import type { RestrictedZone } from '../../../../state/restrictedZonesAtoms'
 
 type Mode = 'idle' | 'drawing' | 'editing' | 'deleting'
@@ -27,7 +28,26 @@ interface Props {
     onTempNameChange: (value: string) => void
 }
 
-const ZoneListItem: React.FC<Props> = ({
+const styles = {
+    listItem: {
+        mb: 0.5,
+    } as SxProps<Theme>,
+    listItemButton: {
+        borderRadius: 1,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        '&.Mui-selected': {
+            bgcolor: 'primary.light',
+            '&:hover': { bgcolor: 'primary.light' },
+        },
+    } as SxProps<Theme>,
+    textInputWrapper: {
+        flex: 1,
+        mr: 1,
+    } as SxProps<Theme>,
+}
+export const ZoneListItem: React.FC<Props> = ({
     zone,
     selected,
     drawingMode,
@@ -42,21 +62,12 @@ const ZoneListItem: React.FC<Props> = ({
     const isEditing = editingNameId === zone.id
 
     return (
-        <ListItem disablePadding sx={{ mb: 0.5 }}>
+        <ListItem disablePadding sx={styles.listItem}>
             <ListItemButton
                 selected={selected}
                 disabled={drawingMode !== 'idle'}
                 onClick={onZoneClick}
-                sx={{
-                    borderRadius: 1,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    '&.Mui-selected': {
-                        bgcolor: 'primary.light',
-                        '&:hover': { bgcolor: 'primary.light' },
-                    },
-                }}
+                sx={styles.listItemButton}
             >
                 {/* Left side: either text or inline TextField */}
                 {isEditing ? (
@@ -68,10 +79,10 @@ const ZoneListItem: React.FC<Props> = ({
                         fullWidth
                         autoFocus
                         onClick={e => e.stopPropagation()}
-                        sx={{ flex: 1, mr: 1 }}
+                        sx={styles.textInputWrapper}
                     />
                 ) : (
-                    <Box sx={{ flex: 1, mr: 1 }}>
+                    <Box sx={styles.textInputWrapper}>
                         <ListItemText
                             primary={zone.name}
                             secondary={`${zone.coordinates.length} points`}
@@ -118,6 +129,4 @@ const ZoneListItem: React.FC<Props> = ({
         </ListItem>
     )
 }
-
-export default ZoneListItem
   
