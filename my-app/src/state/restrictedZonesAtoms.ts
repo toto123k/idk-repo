@@ -13,6 +13,18 @@ export type RestrictedZone = {
   fillOpacity: number
 }
 
+export type DrawHandlers = {
+  startDraw?: () => void;
+  cancelDraw?: () => void;
+  completeDraw?: () => void;
+  startEdit?: () => void;
+  saveEdit?: () => void;
+  cancelEdit?: () => void;
+  startDelete?: () => void;
+  saveDelete?: () => void;
+};
+export type DrawingMode = 'idle' | 'drawing' | 'editing' | 'deleting';
+
 export const restrictedZonesAtom = atom<RestrictedZone[]>([])
 export const drawingModeAtom = atom<'idle' | 'drawing' | 'editing' | 'deleting'>('idle')
 export const selectedZoneIdAtom = atom<string | null>(null)

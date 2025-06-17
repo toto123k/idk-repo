@@ -58,8 +58,9 @@ export const App = () => {
           topLeftContainerSx
         }>
           <MapLayerControlPanel />
-          <AddWaypointButton />
           <RestrictedZonesControlPanel />
+          <AddWaypointButton />
+
         </Box>
         <AttributionControl position="topright" />
         <ZoomControl position='bottomleft' />

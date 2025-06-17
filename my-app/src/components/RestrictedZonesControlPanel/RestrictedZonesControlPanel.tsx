@@ -1,39 +1,6 @@
-// src/components/RestrictedZonesControlPanel.tsx
 import { useState } from 'react'
-import {
-    Paper,
-    IconButton,
-    List,
-    ListItem,
-    ListItemText,
-    ListItemSecondaryAction,
-    ListItemButton,
-    Typography,
-    Box,
-    Divider,
-    TextField,
-    Button,
-    Collapse,
-    Tooltip,
-    Stack,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-} from '@mui/material'
-import {
-    Add as AddIcon,
-    Edit as EditIcon,
-    Delete as DeleteIcon,
-    Cancel as CancelIcon,
-    Check as CheckIcon,
-    ExpandMore as ExpandMoreIcon,
-    ExpandLess as ExpandLessIcon,
-    Warning as WarningIcon,
-} from '@mui/icons-material'
-import MapIcon from '@mui/icons-material/Map'
-import AddLocationIcon from '@mui/icons-material/AddLocation'
 import { useAtom, useAtomValue } from 'jotai'
+import { toast } from 'react-toastify'
 import {
     restrictedZonesAtom,
     drawingModeAtom,
@@ -41,11 +8,15 @@ import {
     isDrawingAtom,
     isEditingAtom,
     isDeletingAtom,
+    drawHandlersAtom,
     type RestrictedZone,
 } from '../../state/restrictedZonesAtoms'
-import { drawHandlersAtom } from '../../state/restrictedZonesAtoms'
-import { toast } from 'react-toastify'
-import CoordinatesModal from '../CoordinatesModal/CoordinatesModal'
+import CoordinatesModal, { type LatLng } from '../CoordinatesModal/CoordinatesModal'
+import { Paper, Box, Divider, Collapse, Typography } from '@mui/material'
+import ActionButtons from './ActionButtons/ActionButtons'
+import NewZoneDialog from './NewZoneDialog/NewZoneDialog'
+import RestrictedZonesHeader from './RestrictedZonesHeader/RestrictedZonesHeader'
+import ZonesList from './ZoneList/ZoneList'
 
 export const RestrictedZonesControlPanel = () => {
     const [zones, setZones] = useAtom(restrictedZonesAtom)
@@ -60,10 +31,9 @@ export const RestrictedZonesControlPanel = () => {
     const [expanded, setExpanded] = useState(true)
     const [editingNameId, setEditingNameId] = useState<string | null>(null)
     const [tempName, setTempName] = useState('')
-
-    // modal state
     const [newZoneDialogOpen, setNewZoneDialogOpen] = useState(false)
     const [coordsModalOpen, setCoordsModalOpen] = useState(false)
+
 
     const handleStartDrawing = () => {
         drawHandlers?.startDraw()
@@ -84,7 +54,6 @@ export const RestrictedZonesControlPanel = () => {
         setDrawingMode('idle')
     }
 
-    // **Deleting**
     const handleStartDeleting = () => {
         drawHandlers?.startDelete()
         setDrawingMode('deleting')
@@ -95,7 +64,6 @@ export const RestrictedZonesControlPanel = () => {
         setDrawingMode('idle')
     }
 
-    // **Naming**
     const handleStartNameEdit = (z: RestrictedZone) => {
         setEditingNameId(z.id)
         setTempName(z.name)
@@ -103,9 +71,7 @@ export const RestrictedZonesControlPanel = () => {
     const handleSaveName = () => {
         if (editingNameId && tempName.trim()) {
             setZones(zones.map(z =>
-                z.id === editingNameId
-                    ? { ...z, name: tempName.trim() }
-                    : z
+                z.id === editingNameId ? { ...z, name: tempName.trim() } : z
             ))
         }
         setEditingNameId(null)
@@ -116,16 +82,14 @@ export const RestrictedZonesControlPanel = () => {
         setTempName('')
     }
 
-    // **List selection**
     const handleZoneClick = (zoneId: string) => {
         if (drawingMode !== 'idle') return
         setSelectedZoneId(zoneId === selectedZoneId ? null : zoneId)
     }
 
-    // **“New Zone…” dialog**
+    // “New Zone…” dialog
     const openNewZoneDialog = () => setNewZoneDialogOpen(true)
     const closeNewZoneDialog = () => setNewZoneDialogOpen(false)
-
     const chooseDrawOnMap = () => {
         closeNewZoneDialog()
         handleStartDrawing()
@@ -135,7 +99,6 @@ export const RestrictedZonesControlPanel = () => {
         setCoordsModalOpen(true)
     }
 
-    // **When coords-modal submits**
     const handleCoordsSubmit = (coords: LatLng[]) => {
         const newZone: RestrictedZone = {
             id: `zone-${Date.now()}`,
@@ -150,266 +113,63 @@ export const RestrictedZonesControlPanel = () => {
         setCoordsModalOpen(false)
     }
 
-    // ─── Render ──────────────────────────────────────────────────────────────
     return (
         <>
             <Paper elevation={3} sx={{ width: 300 }}>
-                {/* Header */}
-                <Box
-                    sx={{
-                        p: 1.5,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        bgcolor: 'primary.main',
-                        color: 'primary.contrastText',
-                    }}
-                >
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <WarningIcon />
-                        <Typography variant="subtitle1" fontWeight="bold">
-                            Restricted Zones
-                        </Typography>
-                    </Box>
-                    <IconButton
-                        size="small"
-                        onClick={() => setExpanded(e => !e)}
-                        sx={{ color: 'inherit' }}
-                    >
-                        {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-                    </IconButton>
-                </Box>
+                <RestrictedZonesHeader
+                    expanded={expanded}
+                    onToggle={() => setExpanded(e => !e)}
+                />
 
                 <Collapse in={expanded}>
                     <Box sx={{ p: 2 }}>
-                        {/* Action Buttons */}
-                        <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
-                            {drawingMode === 'idle' && (
-                                <>
-                                    <Tooltip title="Create new zone">
-                                        <Button
-                                            variant="contained"
-                                            size="small"
-                                            startIcon={<AddIcon />}
-                                            onClick={openNewZoneDialog}
-                                            fullWidth
-                                        >
-                                            New Zone
-                                        </Button>
-                                    </Tooltip>
-
-                                    <Tooltip title="Edit selected zone">
-                                        <span>
-                                            <Button
-                                                variant="outlined"
-                                                size="small"
-                                                startIcon={<EditIcon />}
-                                                onClick={handleStartEditing}
-                                                disabled={zones.length === 0}
-                                            >
-                                                Edit
-                                            </Button>
-                                        </span>
-                                    </Tooltip>
-
-                                    <Tooltip title="Delete zones">
-                                        <span>
-                                            <Button
-                                                variant="outlined"
-                                                size="small"
-                                                color="error"
-                                                startIcon={<DeleteIcon />}
-                                                onClick={handleStartDeleting}
-                                                disabled={zones.length === 0}
-                                            >
-                                                Delete
-                                            </Button>
-                                        </span>
-                                    </Tooltip>
-                                </>
-                            )}
-
-                            {isDrawing && (
-                                <>
-                                    <Typography
-                                        variant="body2"
-                                        sx={{
-                                            flex: 1,
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                        }}
-                                    >
-                                        Click points to draw zone
-                                    </Typography>
-                                    <Tooltip title="Cancel drawing">
-                                        <IconButton
-                                            size="small"
-                                            onClick={handleCancelDrawing}
-                                            color="error"
-                                        >
-                                            <CancelIcon />
-                                        </IconButton>
-                                    </Tooltip>
-                                </>
-                            )}
-
-                            {isEditing && (
-                                <>
-                                    <Typography
-                                        variant="body2"
-                                        sx={{
-                                            flex: 1,
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                        }}
-                                    >
-                                        Drag points to edit
-                                    </Typography>
-                                    <Tooltip title="Done editing">
-                                        <IconButton
-                                            size="small"
-                                            onClick={handleFinishEditing}
-                                            color="primary"
-                                        >
-                                            <CheckIcon />
-                                        </IconButton>
-                                    </Tooltip>
-                                </>
-                            )}
-
-                            {isDeleting && (
-                                <>
-                                    <Typography
-                                        variant="body2"
-                                        sx={{
-                                            flex: 1,
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                        }}
-                                    >
-                                        Click zones to delete
-                                    </Typography>
-                                    <Tooltip title="Done deleting">
-                                        <IconButton
-                                            size="small"
-                                            onClick={handleFinishDeleting}
-                                            color="primary"
-                                        >
-                                            <CheckIcon />
-                                        </IconButton>
-                                    </Tooltip>
-                                </>
-                            )}
-                        </Stack>
+                        <ActionButtons
+                            drawingMode={drawingMode}
+                            isDrawing={isDrawing}
+                            isEditing={isEditing}
+                            isDeleting={isDeleting}
+                            zonesCount={zones.length}
+                            onNewZone={openNewZoneDialog}
+                            onStartEditing={handleStartEditing}
+                            onStartDeleting={handleStartDeleting}
+                            onCancelDrawing={handleCancelDrawing}
+                            onFinishEditing={handleFinishEditing}
+                            onFinishDeleting={handleFinishDeleting}
+                        />
 
                         <Divider sx={{ mb: 1 }} />
 
-                        {/* Zones List */}
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                        <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            sx={{ mb: 1 }}
+                        >
                             {zones.length} zone{zones.length !== 1 ? 's' : ''} defined
                         </Typography>
 
-                        <List dense sx={{ maxHeight: 200, overflow: 'auto' }}>
-                            {zones.map(z => (
-                                <ListItem key={z.id} disablePadding sx={{ mb: 0.5 }}>
-                                    <ListItemButton
-                                        selected={z.id === selectedZoneId}
-                                        disabled={drawingMode !== 'idle'}
-                                        onClick={() => handleZoneClick(z.id)}
-                                        sx={{
-                                            borderRadius: 1,
-                                            '&.Mui-selected': {
-                                                bgcolor: 'primary.light',
-                                                '&:hover': { bgcolor: 'primary.light' },
-                                            },
-                                        }}
-                                    >
-                                        {editingNameId === z.id ? (
-                                            <TextField
-                                                value={tempName}
-                                                onChange={e => setTempName(e.target.value)}
-                                                onKeyPress={e => e.key === 'Enter' && handleSaveName()}
-                                                size="small"
-                                                fullWidth
-                                                autoFocus
-                                                onClick={e => e.stopPropagation()}
-                                            />
-                                        ) : (
-                                            <ListItemText
-                                                primary={z.name}
-                                                secondary={`${z.coordinates.length} points`}
-                                            />
-                                        )}
-                                    </ListItemButton>
-                                    <ListItemSecondaryAction>
-                                        {editingNameId === z.id ? (
-                                            <>
-                                                <IconButton size="small" onClick={handleSaveName}>
-                                                    <CheckIcon fontSize="small" />
-                                                </IconButton>
-                                                <IconButton size="small" onClick={handleCancelNameEdit}>
-                                                    <CancelIcon fontSize="small" />
-                                                </IconButton>
-                                            </>
-                                        ) : drawingMode === 'idle' ? (
-                                            <IconButton
-                                                size="small"
-                                                onClick={e => {
-                                                    e.stopPropagation()
-                                                    handleStartNameEdit(z)
-                                                }}
-                                            >
-                                                <EditIcon fontSize="small" />
-                                            </IconButton>
-                                        ) : null}
-                                    </ListItemSecondaryAction>
-                                </ListItem>
-                            ))}
-                        </List>
-
-                        {zones.length === 0 && (
-                            <Typography
-                                variant="body2"
-                                color="text.secondary"
-                                align="center"
-                                sx={{ py: 2 }}
-                            >
-                                No restricted zones defined
-                            </Typography>
-                        )}
+                        <ZonesList
+                            zones={zones}
+                            selectedZoneId={selectedZoneId}
+                            drawingMode={drawingMode}
+                            editingNameId={editingNameId}
+                            tempName={tempName}
+                            onZoneClick={handleZoneClick}
+                            onStartNameEdit={handleStartNameEdit}
+                            onSaveName={handleSaveName}
+                            onCancelNameEdit={handleCancelNameEdit}
+                            onTempNameChange={setTempName}
+                        />
                     </Box>
                 </Collapse>
             </Paper>
 
-            {/* ─── “New Zone” Choice Dialog ─────────────────────────────────────── */}
-            <Dialog open={newZoneDialogOpen} onClose={closeNewZoneDialog}>
-                <DialogTitle>Create new zone</DialogTitle>
-                <DialogContent>
-                    <Stack spacing={2} sx={{ mt: 1, mb: 1 }}>
-                        <Button
-                            variant="contained"
-                            startIcon={<MapIcon />}
-                            onClick={chooseDrawOnMap}
-                            fullWidth
-                        >
-                            Draw on map
-                        </Button>
-                        <Button
-                            variant="outlined"
-                            startIcon={<AddLocationIcon />}
-                            onClick={chooseByCoords}
-                            fullWidth
-                        >
-                            By coordinates
-                        </Button>
-                    </Stack>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={closeNewZoneDialog}>Cancel</Button>
-                </DialogActions>
-            </Dialog>
+            <NewZoneDialog
+                open={newZoneDialogOpen}
+                onClose={closeNewZoneDialog}
+                onDrawOnMap={chooseDrawOnMap}
+                onByCoords={chooseByCoords}
+            />
 
-            {/* ─── Coordinates Modal (unchanged) ─────────────────────────────── */}
             <CoordinatesModal
                 open={coordsModalOpen}
                 onClose={() => setCoordsModalOpen(false)}
@@ -418,3 +178,4 @@ export const RestrictedZonesControlPanel = () => {
         </>
     )
 }
+

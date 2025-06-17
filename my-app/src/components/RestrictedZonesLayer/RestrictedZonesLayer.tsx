@@ -1,221 +1,127 @@
 // src/components/RestrictedZonesLayer.tsx
-import { useEffect, useRef } from 'react'
-import { FeatureGroup } from 'react-leaflet'
-import { useAtom, useSetAtom } from 'jotai'
-import L from 'leaflet'
-import 'leaflet-draw'
-import 'leaflet-draw/dist/leaflet.draw.css'
+import { useEffect, useRef, useCallback } from 'react';
+import { FeatureGroup } from 'react-leaflet';
+import { useAtom, useSetAtom } from 'jotai';
+import L from 'leaflet'; // For L.Polygon, L.LayerGroup, L.LatLng
+import 'leaflet-draw/dist/leaflet.draw.css'; // Main CSS for Leaflet.Draw
+
 import {
     restrictedZonesAtom,
     drawingModeAtom,
     selectedZoneIdAtom,
-    tempPolygonAtom,
-    type RestrictedZone
-} from '../../state/restrictedZonesAtoms'
-import { drawHandlersAtom } from '../../state/restrictedZonesAtoms'
-import { toast } from 'react-toastify'
+    drawHandlersAtom,
+    type RestrictedZone,
+    type DrawingMode,
+    // tempPolygonAtom, // Include if used elsewhere or for future features
+} from '../../state/restrictedZonesAtoms'; // Adjust path
+import { toast } from 'react-toastify';
 
-// ———— Helper to safely extract handlers ————
-export const getDrawHandlers = (drawControlRef: React.MutableRefObject<any>) => {
-    const tb = drawControlRef.current?._toolbars
-    const drawH = tb?.draw?._modes?.polygon?.handler
-    const editH = tb?.edit?._modes?.edit?.handler
-    const remH = tb?.edit?._modes?.remove?.handler
-
-    return {
-        startDraw: () => drawH?.enable?.(),
-        cancelDraw: () => drawH?.disable?.(),
-        completeDraw: () => { drawH?.completeShape?.(); drawH?.disable?.() },
-
-        startEdit: () => editH?.enable?.(),
-        saveEdit: () => { editH?.save?.(); editH?.disable?.() },
-        cancelEdit: () => editH?.disable?.(),
-
-        startDelete: () => remH?.enable?.(),
-        saveDelete: () => { remH?.save?.(); remH?.disable?.() },
-    }
-}
-
+import { hideLeafletDrawToolbar } from '../../utils/leafletDrawUtils'; // Adjust path
+import { useRenderRestrictedZones } from '../../hooks/useRenderRestrictedZones'; // Adjust path
+import { useLeafletDrawControl } from '../../hooks/useLeafletControl';
 
 export const RestrictedZonesLayer = () => {
-    const [zones, setZones] = useAtom(restrictedZonesAtom)
-    const [drawingMode, setDrawingMode] = useAtom(drawingModeAtom)
-    const [selectedZoneId, setSelectedZoneId] = useAtom(selectedZoneIdAtom)
-    const setTempPolygon = useSetAtom(tempPolygonAtom)
-    const setDrawHandlers = useSetAtom(drawHandlersAtom)
+    const [zones, setZones] = useAtom(restrictedZonesAtom);
+    const [drawingMode, setDrawingMode] = useAtom(drawingModeAtom);
+    const [selectedZoneId, setSelectedZoneId] = useAtom(selectedZoneIdAtom);
+    const setDrawHandlers = useSetAtom(drawHandlersAtom);
+    // const setTempPolygon = useSetAtom(tempPolygonAtom); // Keep if needed
 
-    const featureGroupRef = useRef<L.FeatureGroup>(null!)
-    const drawControlRef = useRef<L.Control.Draw>(null!)
-    const mapRef = useRef<L.Map>(null!)
-    const handlersSetRef = useRef(false)
+    const featureGroupRef = useRef<L.FeatureGroup>(null!); // `null!` used as in original
 
-    // 1) Hide the built-in toolbar
+    // 1. Hide built-in Leaflet.Draw toolbar
     useEffect(() => {
-        const style = document.createElement('style')
-        style.textContent = `
-      .leaflet-draw-section, .leaflet-draw-toolbar { display: none !important; }
-    `
-        document.head.appendChild(style)
-        return () => { document.head.removeChild(style) }
-    }, [])
+        const cleanupStyle = hideLeafletDrawToolbar();
+        return cleanupStyle;
+    }, []);
 
-    // 2) Initialize control, hook events, and capture handlers
-    useEffect(() => {
-        const fg = featureGroupRef.current
-        if (!fg) return
-        const map = (fg as any)._map as L.Map
-        if (!map) return
-        mapRef.current = map
-
-        // — add the Draw control exactly once —
-        if (!drawControlRef.current) {
-            drawControlRef.current = new L.Control.Draw({
-                draw: {
-                    polygon: {
-                        allowIntersection: false,
-                        shapeOptions: { color: '#ff0000', fillColor: '#ff0000', fillOpacity: 0.2 }
-                    },
-                    polyline: false,
-                    circle: false,
-                    rectangle: false,
-                    marker: false,
-                    circlemarker: false
-                },
-                edit: { featureGroup: fg }
-            })
-            map.addControl(drawControlRef.current)
-        }
-
-        // — once the control’s internal _toolbars exist, stash out the handlers —
-        const tb = (drawControlRef.current as any)?._toolbars
-        if (tb && !handlersSetRef.current) {
-            setDrawHandlers(getDrawHandlers(drawControlRef))
-            handlersSetRef.current = true
-        }
-
-        // — your existing create/edit/delete listeners —
-        const handleCreated = (e: any) => {
-            const layer = e.layer
-            const coords = (layer.getLatLngs()[0] as L.LatLng[]).map(p => ({ lat: p.lat, lng: p.lng }))
+    // 2. Callbacks for Leaflet.Draw events (managed by useLeafletDrawControl)
+    const handleZoneCreated = useCallback((layer: L.Polygon) => {
+        const coords = (layer.getLatLngs()[0] as L.LatLng[]).map(p => ({ lat: p.lat, lng: p.lng }));
+        setZones(prevZones => {
             const newZone: RestrictedZone = {
                 id: `zone-${Date.now()}`,
-                name: `Zone ${zones.length + 1}`,
+                name: `Zone ${prevZones.length + 1}`,
                 coordinates: coords,
-                color: '#ff0000',
-                fillColor: '#ff0000',
-                fillOpacity: 0.2
+                color: '#ff0000', // Default color from draw options
+                fillColor: '#ff0000', // Default fill color
+                fillOpacity: 0.2, // Default fill opacity
+            };
+            return [...prevZones, newZone];
+        });
+        setDrawingMode('idle');
+        toast.success('Restricted zone created');
+    }, [setZones, setDrawingMode]);
+
+    const handleZoneEdited = useCallback((editedLayers: L.LayerGroup) => {
+        let updatedCount = 0;
+        editedLayers.eachLayer(layer => {
+            // Layer type assertion and options access
+            const polygonLayer = layer as L.Polygon; // Assuming only polygons are edited
+            const zoneId = polygonLayer.options.zoneId;
+
+            if (zoneId) {
+                const newCoords = (polygonLayer.getLatLngs()[0] as L.LatLng[]).map(p => ({ lat: p.lat, lng: p.lng }));
+                setZones(prevZones =>
+                    prevZones.map(z => (z.id === zoneId ? { ...z, coordinates: newCoords } : z))
+                );
+                updatedCount++;
+            } else {
+                console.warn('Edited layer is missing zoneId from options:', layer);
             }
-            setZones(prev => [...prev, newZone])
-            setDrawingMode('idle')
-            toast.success('Restricted zone created')
+        });
+        if (updatedCount > 0) {
+            toast.success(`${updatedCount} zone(s) updated`);
+        }
+        setDrawingMode('idle');
+    }, [setZones, setDrawingMode]);
+
+    const handleZoneDeleted = useCallback((deletedLayers: L.LayerGroup) => {
+        const removedIds: string[] = [];
+        deletedLayers.eachLayer(layer => {
+            const zoneId = (layer as L.Polygon).options.zoneId; // Assuming L.Polygon
+            if (zoneId) {
+                removedIds.push(zoneId);
+            } else {
+                console.warn('Deleted layer is missing zoneId from options:', layer);
+            }
+        });
+
+        if (removedIds.length === 0) {
+            setDrawingMode('idle');
+            return;
         }
 
-        const handleEdited = (e: any) => {
-            e.layers.eachLayer((layer: any) => {
-                const zid = layer.zoneId || layer.options?.zoneId || layer._zoneId
-                if (!zid) return
-                const coords = (layer.getLatLngs()[0] as L.LatLng[]).map(p => ({ lat: p.lat, lng: p.lng }))
-                setZones(prev => prev.map(z => z.id === zid ? { ...z, coordinates: coords } : z))
-            })
-            setDrawingMode('idle')
-            toast.success('Zone updated')
+        setZones(prevZones => prevZones.filter(z => !removedIds.includes(z.id)));
+
+        if (selectedZoneId && removedIds.includes(selectedZoneId)) {
+            setSelectedZoneId(null);
         }
 
-        const handleDeleted = (e: any) => {
-            // collect exactly which zoneIds were deleted
-            const removedIds: string[] = []
-            e.layers.eachLayer((layer: any) => {
-                const zid = layer.zoneId || layer.options?.zoneId || layer._zoneId
-                if (zid) removedIds.push(zid)
-            })
+        toast.success(`${removedIds.length} zone(s) deleted`);
+        setDrawingMode('idle');
+    }, [setZones, setDrawingMode, selectedZoneId, setSelectedZoneId]);
 
-            if (removedIds.length === 0) {
-                // nothing to do
-                setDrawingMode('idle')
-                return
-            }
+    useLeafletDrawControl({
+        featureGroupRef,
+        onZoneCreated: handleZoneCreated,
+        onZoneEdited: handleZoneEdited,
+        onZoneDeleted: handleZoneDeleted,
+        setDrawHandlersAtom: setDrawHandlers,
+        drawingMode: drawingMode as DrawingMode,
+    });
 
-            // immediately filter your Jotai atom by removedIds
-            setZones(prev => {
-                const remaining = prev.filter(z => !removedIds.includes(z.id))
-                toast.success(`${removedIds.length} zone(s) deleted`)
-                return remaining
-            })
+    const handleZoneClick = useCallback((zoneId: string) => {
+        setSelectedZoneId(prevId => (zoneId === prevId ? null : zoneId));
+    }, [setSelectedZoneId]);
 
-            // if the deleted zone was selected, clear it
-            if (removedIds.includes(selectedZoneId!)) {
-                setSelectedZoneId(null)
-            }
+    useRenderRestrictedZones({
+        featureGroupRef,
+        zones,
+        selectedZoneId,
+        drawingMode: drawingMode as DrawingMode,
+        onZoneClick: handleZoneClick,
+    });
 
-            // now, and only now, go back to idle
-            setDrawingMode('idle')
-        }
-
-
-        map.on(L.Draw.Event.CREATED, handleCreated)
-        map.on(L.Draw.Event.EDITED, handleEdited)
-        map.on(L.Draw.Event.DELETED, handleDeleted)
-
-        return () => {
-            map.off(L.Draw.Event.CREATED, handleCreated)
-            map.off(L.Draw.Event.EDITED, handleEdited)
-            map.off(L.Draw.Event.DELETED, handleDeleted)
-            if (drawControlRef.current) {
-                map.removeControl(drawControlRef.current)
-            }
-        }
-    }, [
-        setZones,
-        setDrawingMode,
-        setSelectedZoneId,
-        setDrawHandlers,
-        zones.length,
-        selectedZoneId
-    ])
-
-    // 3) On mode change, enable/disable only the handler that exists
-    useEffect(() => {
-        const tb = drawControlRef.current?._toolbars
-        if (!tb) return
-
-        // disable anything that might be active
-        tb.draw?._modes?.polygon?.handler?.disable?.()
-        tb.edit?._modes?.edit?.handler?.disable?.()
-        tb.edit?._modes?.remove?.handler?.disable?.()
-
-        // enable only what we need
-        if (drawingMode === 'drawing') tb.draw?._modes?.polygon?.handler?.enable?.()
-        if (drawingMode === 'editing') tb.edit?._modes?.edit?.handler?.enable?.()
-        if (drawingMode === 'deleting') tb.edit?._modes?.remove?.handler?.enable?.()
-    }, [drawingMode])
-
-    // 4) Re-draw all your polygons whenever zones change
-    useEffect(() => {
-        const fg = featureGroupRef.current
-        const map = mapRef.current
-        if (!fg || !map) return
-        fg.clearLayers()
-
-        zones.forEach(zone => {
-            const isSel = zone.id === selectedZoneId
-            const poly = L.polygon(
-                zone.coordinates.map(c => [c.lat, c.lng] as [number, number]),
-                {
-                    color: isSel ? '#0066ff' : zone.color,
-                    fillColor: zone.fillColor,
-                    fillOpacity: zone.fillOpacity,
-                    weight: isSel ? 3 : 2
-                }
-            )
-                ; (poly as any).zoneId = zone.id
-            poly.on('click', () => {
-                if (drawingMode === 'idle') {
-                    setSelectedZoneId(zone.id === selectedZoneId ? null : zone.id)
-                }
-            })
-            fg.addLayer(poly)
-        })
-    }, [zones, drawingMode, selectedZoneId, setSelectedZoneId])
-
-    return <FeatureGroup ref={featureGroupRef} />
-}
+    return <FeatureGroup ref={featureGroupRef} />;
+};
