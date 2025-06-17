@@ -14,6 +14,8 @@ const boxStyles = {
     backgroundColor: 'white',
     borderRadius: '4px',
     boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
+    display: "flex",
+    justifyContent: "center"
     // If it needs to float on the map:
     // position: 'absolute',
     // top: '10px',
@@ -22,7 +24,7 @@ const boxStyles = {
 };
 
 const buttonStyles = {
-    minWidth: 'auto',
+    minWidth: '100%',
     // padding: '6px 10px', // Example padding
 };
 

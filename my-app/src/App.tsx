@@ -8,6 +8,8 @@ import { MapLayerControlPanel } from './components/MapLayerControlPanel/MapLayer
 import { AttributionControl, ZoomControl } from 'react-leaflet'
 import type { SxProps, Theme } from '@mui/material/styles';
 import { AddWaypointButton } from './components/AddWaypointButton/AddWaypointButton'
+import { RestrictedZonesLayer } from './components/RestrictedZonesLayer/RestrictedZonesLayer'
+import { RestrictedZonesControlPanel } from './components/RestrictedZonesControlPanel/RestrictedZonesControlPanel'
 
 // A basic MUI theme instance
 const theme = createTheme({
@@ -51,11 +53,13 @@ export const App = () => {
 
       <MapShell center={center} zoom={9}>
         <RoutingLayer initialSource={INITIAL_SOURCE} initialTarget={INITIAL_TARGET} />
+        <RestrictedZonesLayer />
         <Box sx={
           topLeftContainerSx
         }>
           <MapLayerControlPanel />
           <AddWaypointButton />
+          <RestrictedZonesControlPanel />
         </Box>
         <AttributionControl position="topright" />
         <ZoomControl position='bottomleft' />
