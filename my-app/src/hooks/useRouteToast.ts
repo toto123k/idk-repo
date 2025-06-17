@@ -35,12 +35,4 @@ export const useRouteToast = (loading: boolean, error: string | null) => {
 
         prevLoading.current = loading
     }, [loading, error])
-
-    useEffect(() => {
-        return () => {
-            if (toastId.current != null) {
-                toast.dismiss(toastId.current)
-            }
-        }
-    }, [])
 }

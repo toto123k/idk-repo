@@ -1,13 +1,8 @@
 import axios from 'axios';
-import type { LatLngTuple } from '../types'; // Assuming this is [lat, lng]
+import type { LatLngTuple } from '../types';
 
-// Assuming RouteResponse is defined in your types file, e.g.:
-// export interface RouteResponse {
-//   route: [number, number][]; // Array of [lng, lat]
-// }
 import type { RouteResponse } from '../types';
 
-// The API now expects a list of coordinates in the body
 interface ApiRouteRequestPayload {
     coordinates: {
         lat: number;
@@ -27,7 +22,7 @@ class ApiService {
      * @param points An array of [lat, lng] tuples. Must contain at least a start and end point.
      * @returns Promise resolving to array of [lng, lat] coordinates for the full route.
      */
-    async fetchRoute(points: LatLngTuple[]): Promise<[number, number][]> {
+    async fetchRoute(points: LatLngTuple[]): Promise<LatLngTuple[]> {
         if (points.length < 2) {
             throw new Error("At least two points (start and end) are required to fetch a route.");
         }

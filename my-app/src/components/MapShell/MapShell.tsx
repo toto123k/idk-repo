@@ -1,5 +1,5 @@
 import { useAtom } from 'jotai';
-import { MapContainer, TileLayer} from 'react-leaflet';
+import { MapContainer, TileLayer } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import type { LatLngTuple } from '../../types';
 import { selectedMapLayerAtom } from '../../state/mapAtoms';
@@ -24,7 +24,6 @@ export const MapShell: React.FC<MapShellProps> = ({ center, zoom, children }) =>
         >
             <TileLayer
                 key={selectedLayer.id}
-                attribution={selectedLayer.attribution}
                 url={selectedLayer.url}
             />
             {children}

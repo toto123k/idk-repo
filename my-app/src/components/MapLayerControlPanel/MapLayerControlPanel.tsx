@@ -56,7 +56,6 @@ export const MapLayerControlPanel: React.FC = () => {
 
         const newLayer: MapLayer = {
             id: newId, name: name.trim(), url: url.trim(),
-            attribution: ''
         };
 
         setLayers(prevLayers => [...prevLayers, newLayer]);

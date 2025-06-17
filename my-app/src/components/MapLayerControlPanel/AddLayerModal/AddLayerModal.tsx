@@ -17,7 +17,7 @@ interface AddLayerModalProps {
 export const AddLayerModal: React.FC<AddLayerModalProps> = ({ open, onClose, onAddLayer }) => {
     const [name, setName] = useState('');
     const [url, setUrl] = useState('');
-    const modalSx = { zIndex: 9999 };
+    const modalSx = { zIndex: 5000 };
     // Reset fields when the modal opens
     useEffect(() => {
         if (open) {
@@ -27,7 +27,6 @@ export const AddLayerModal: React.FC<AddLayerModalProps> = ({ open, onClose, onA
     }, [open]);
 
     const handleSave = () => {
-        // The parent component will handle validation and closing the modal
         onAddLayer(name, url);
     };
 

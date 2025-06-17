@@ -9,10 +9,10 @@ import {
     ListItemButton,
     ListItemText,
     Typography,
-    Box, // For more flexible layout if needed
+    Box,
 } from '@mui/material';
-import { waypointsAtom, allPointsAtom } from '../../../state/routingAtoms'; // Adjust path if needed
-import type { LatLngTuple } from '../../../types'; // Adjust path if needed
+import { waypointsAtom, allPointsAtom } from '../../../state/routingAtoms';
+import type { LatLngTuple } from '../../../types';
 
 interface InsertWaypointDialogProps {
     open: boolean;
@@ -20,36 +20,33 @@ interface InsertWaypointDialogProps {
 }
 
 const listItemButtonStyles = {
-    // textAlign: 'center', // Centering might look odd with varied text lengths
-    justifyContent: 'center', // If you want to center the text content within the button
+    justifyContent: 'center'
 };
 
 const dialogContentStyles = {
-    maxHeight: '400px', // Or use theme.spacing, e.g., theme.spacing(50)
+    maxHeight: '20vh',
     overflowY: 'auto',
-    paddingTop: '8px', // Add some padding if dividers are used
 };
 
 const boldTextStyle = {
     fontWeight: 'bold',
-    mx: '4px', // Add a little horizontal margin around bold text
 };
 
 export const InsertWaypointDialog: React.FC<InsertWaypointDialogProps> = ({ open, onClose }) => {
     const [waypoints, setWaypoints] = useAtom(waypointsAtom);
-    const [allPoints] = useAtom(allPointsAtom); // [src, ...waypoints, tgt]
+    const [allPoints] = useAtom(allPointsAtom);
 
-    // This function now returns a ReactNode for easier bolding
     const getPointLabelNode = (point: LatLngTuple | null, indexInAllPoints: number): React.ReactNode => {
-        if (!point) return <Typography component="span" sx={boldTextStyle}>N/A</Typography>;
-        if (indexInAllPoints === 0) return <Typography component="span" sx={boldTextStyle}>Source</Typography>;
-        if (indexInAllPoints === allPoints.length - 1) return <Typography component="span" sx={boldTextStyle}>Target</Typography>;
-        return (
-            <>
-                <Typography component="span" sx={boldTextStyle}>Waypoint {indexInAllPoints}</Typography>
-            </>
-        );
+        const label = (() => {
+            if (!point) return 'N/A';
+            if (indexInAllPoints === 0) return 'Source';
+            if (indexInAllPoints === allPoints.length - 1) return 'Target';
+            return `Waypoint ${indexInAllPoints}`;
+        })();
+
+        return <Typography component="span" sx={boldTextStyle}>{label}</Typography>;
     };
+
 
     const handleInsertWaypoint = (insertAtIndexInWaypoints: number) => {
         const point1 = allPoints[insertAtIndexInWaypoints];
@@ -68,26 +65,28 @@ export const InsertWaypointDialog: React.FC<InsertWaypointDialogProps> = ({ open
     };
 
     const segments: { labelNode: React.ReactNode; insertAtIndex: number }[] = [];
+
     if (allPoints.length >= 2) {
         for (let i = 0; i < allPoints.length - 1; i++) {
-            const p1LabelNode = getPointLabelNode(allPoints[i], i);
-            const p2LabelNode = getPointLabelNode(allPoints[i + 1], i + 1);
-            segments.push({
-                labelNode: (
-                    <Typography component="span" variant="body2">
-                        Between {p1LabelNode} and {p2LabelNode}
-                    </Typography>
-                ),
-                insertAtIndex: i,
-            });
+            const fromLabel = getPointLabelNode(allPoints[i], i);
+            const toLabel = getPointLabelNode(allPoints[i + 1], i + 1);
+
+            const labelNode = (
+                <Typography component="span" variant="body2">
+                    Between {fromLabel} and {toLabel}
+                </Typography>
+            );
+
+            segments.push({ labelNode, insertAtIndex: i });
         }
     }
+
 
     return (
         <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
             <DialogTitle>Insert New Waypoint Between</DialogTitle>
             <DialogContent dividers sx={dialogContentStyles}>
-                {segments.length > 0 ? (
+                {segments.length > 0 && (
                     <List disablePadding>
                         {segments.map((segment, index) => (
                             <ListItem key={index} disablePadding>
@@ -100,10 +99,6 @@ export const InsertWaypointDialog: React.FC<InsertWaypointDialogProps> = ({ open
                             </ListItem>
                         ))}
                     </List>
-                ) : (
-                    <Typography variant="body2" align="center" sx={{ p: 2 }}>
-                        Not enough points to define segments.
-                    </Typography>
                 )}
             </DialogContent>
         </Dialog>

@@ -34,17 +34,20 @@ export const LocationDetailsPopup = ({ data }: Props) => {
         data.position[1]
     )
 
-    const chipColor =
-        data.type === 'source'
-            ? 'primary'
-            : data.type === 'target'
-                ? 'error'
-                : 'warning' // waypoint
+    const chipColorMap: Record<string, 'primary' | 'error' | 'warning'> = {
+        source: 'primary',
+        target: 'error',
+        waypoint: 'warning',
+    };
+
+    const chipColor = chipColorMap[data.type] ?? 'default';
 
     const title =
         data.type === 'waypoint' && data.order !== undefined
             ? `Waypoint #${data.order}`
-            : `${data.type} Point`
+            : `${data.type.charAt(0).toUpperCase() + data.type.slice(1)} Point`;
+
+
 
     return (
         <Box sx={popupContentStyle}>
