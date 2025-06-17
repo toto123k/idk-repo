@@ -14,10 +14,10 @@ import {
 import { CoordinatesModal, type LatLng } from '../CoordinatesModal/CoordinatesModal'
 import { Paper, Box, Divider, Collapse, Typography } from '@mui/material'
 import type { SxProps, Theme } from '@mui/material/styles'
-import {ActionButtons} from './ActionButtons/ActionButtons'
-import {NewZoneDialog} from './NewZoneDialog/NewZoneDialog'
-import {RestrictedZonesHeader} from './RestrictedZonesHeader/RestrictedZonesHeader'
-import {ZonesList} from './ZoneList/ZoneList'
+import { ActionButtons } from './ActionButtons/ActionButtons'
+import { NewZoneDialog } from './NewZoneDialog/NewZoneDialog'
+import { RestrictedZonesHeader } from './RestrictedZonesHeader/RestrictedZonesHeader'
+import { ZonesList } from './ZoneList/ZoneList'
 
 const styles = {
     panelContainer: {
@@ -42,7 +42,7 @@ export const RestrictedZonesControlPanel = () => {
     const isDrawing = useAtomValue(isDrawingAtom)
     const isEditing = useAtomValue(isEditingAtom)
     const isDeleting = useAtomValue(isDeletingAtom)
-    const drawHandlers = useAtomValue(drawHandlersAtom)
+    const drawHandlers = useAtomValue(drawHandlersAtom)!
 
     const [expanded, setExpanded] = useState(true)
     const [editingNameId, setEditingNameId] = useState<string | null>(null)
@@ -52,31 +52,32 @@ export const RestrictedZonesControlPanel = () => {
 
 
     const handleStartDrawing = () => {
-        drawHandlers?.startDraw()
+        drawHandlers.startDraw?.()
         setDrawingMode('drawing')
         setSelectedZoneId(null)
     }
+
     const handleCancelDrawing = () => {
-        drawHandlers?.cancelDraw()
+        drawHandlers?.cancelDraw?.()
         setDrawingMode('idle')
     }
 
     const handleStartEditing = () => {
-        drawHandlers?.startEdit()
+        drawHandlers?.startEdit?.()
         setDrawingMode('editing')
     }
     const handleFinishEditing = () => {
-        drawHandlers?.saveEdit()
+        drawHandlers?.saveEdit?.()
         setDrawingMode('idle')
     }
 
     const handleStartDeleting = () => {
-        drawHandlers?.startDelete()
+        drawHandlers?.startDelete?.()
         setDrawingMode('deleting')
         setSelectedZoneId(null)
     }
     const handleFinishDeleting = () => {
-        drawHandlers?.saveDelete()
+        drawHandlers?.saveDelete?.()
         setDrawingMode('idle')
     }
 

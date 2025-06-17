@@ -1,6 +1,6 @@
 // src/state/restrictedZonesAtoms.ts
 import { atom } from 'jotai'
-import type { getDrawHandlers } from '../components/RestrictedZonesLayer/RestrictedZonesLayer';
+import type { getDrawHandlers } from '../utils/leafletDrawUtils';
 
 // — your zone types —
 export type LatLng = { lat: number; lng: number }

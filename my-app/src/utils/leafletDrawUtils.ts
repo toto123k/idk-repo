@@ -1,27 +1,34 @@
 // src/utils/leafletDrawUtils.ts
-import L from 'leaflet';
-import 'leaflet-draw';
-import type { DrawHandlers } from '../state/restrictedZonesAtoms';
+import L from 'leaflet'
+import 'leaflet-draw'
+import type { DrawHandlers } from '../state/restrictedZonesAtoms'
 
-export const getDrawHandlers = (drawControlRef: React.MutableRefObject<L.Control.Draw | null>): DrawHandlers => {
-    const tb = drawControlRef.current?._toolbars as any; 
-    const drawH = tb?.draw?._modes?.polygon?.handler;
-    const editH = tb?.edit?._modes?.edit?.handler;
-    const remH = tb?.edit?._modes?.remove?.handler;
+export const getDrawHandlers = (
+    drawControlRef: React.MutableRefObject<L.Control.Draw | null>
+): DrawHandlers => {
+    const ctl = drawControlRef.current as any
+    const tb = ctl?._toolbars
+    const { handler: drawH } = tb?.draw?._modes?.polygon || {}
+    const { handler: editH } = tb?.edit?._modes?.edit || {}
+    const { handler: remH } = tb?.edit?._modes?.remove || {}
+
+    const toggle = (h: any, method: 'enable' | 'disable') => h?.[method]?.()
+    const commit = (h: any, method: 'save' | 'completeShape') => h?.[method]?.()
 
     return {
-        startDraw: () => drawH?.enable?.(),
-        cancelDraw: () => drawH?.disable?.(),
-        completeDraw: () => { drawH?.completeShape?.(); drawH?.disable?.(); },
+        startDraw: () => toggle(drawH, 'enable'),
+        cancelDraw: () => toggle(drawH, 'disable'),
+        completeDraw: () => { commit(drawH, 'completeShape'); toggle(drawH, 'disable') },
 
-        startEdit: () => editH?.enable?.(),
-        saveEdit: () => { editH?.save?.(); editH?.disable?.(); },
-        cancelEdit: () => editH?.disable?.(),
+        startEdit: () => toggle(editH, 'enable'),
+        saveEdit: () => { commit(editH, 'save'); toggle(editH, 'disable') },
+        cancelEdit: () => toggle(editH, 'disable'),
 
-        startDelete: () => remH?.enable?.(),
-        saveDelete: () => { remH?.save?.(); remH?.disable?.(); },
-    };
-};
+        startDelete: () => toggle(remH, 'enable'),
+        saveDelete: () => { commit(remH, 'save'); toggle(remH, 'disable') },
+    }
+}
+
 
 export const hideLeafletDrawToolbar = (): (() => void) => {
     const styleId = 'leaflet-draw-toolbar-hider';
