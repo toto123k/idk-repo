@@ -92,7 +92,6 @@ export const MapLayerControlPanel: React.FC = () => {
     return (
         <>
             <Paper elevation={3} sx={panelSx}>
-                {/* Header with Layers icon + collapse toggle */}
                 <Box sx={headerSx}>
                     <Box sx={headerTitleSx}>
                         <LayersIcon />
