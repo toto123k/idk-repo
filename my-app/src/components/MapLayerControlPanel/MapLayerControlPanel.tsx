@@ -88,6 +88,7 @@ export const MapLayerControlPanel: React.FC = () => {
         setModalOpen(false)
     }
 
+    const iconButtonSx = { alignSelf: 'center', mt: 1 };
     return (
         <>
             <Paper elevation={3} sx={panelSx}>
@@ -129,7 +130,7 @@ export const MapLayerControlPanel: React.FC = () => {
                             size="small"
                             onClick={() => setModalOpen(true)}
                             aria-label="Add new layer"
-                            sx={{ alignSelf: 'center', mt: 1 }}
+                            sx={iconButtonSx}
                         >
                             <AddIcon />
                         </IconButton>

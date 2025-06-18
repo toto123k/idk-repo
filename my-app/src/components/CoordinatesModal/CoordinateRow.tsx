@@ -23,8 +23,9 @@ export const CoordinateRow: React.FC<CoordinateRowProps> = ({
     onChange,
     onRemove,
 }) => {
+    const rowStyling = { display: 'flex', gap: 1, mb: 2 };
     return (
-        <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+        <Box sx={rowStyling}>
             <TextField
                 label={`Latitude ${idx + 1}`}
                 value={lat}

@@ -1,4 +1,3 @@
-// src/components/RoutingLayer/InsertWaypointDialog.tsx
 import { useAtom } from 'jotai';
 import {
     Dialog,
@@ -9,7 +8,6 @@ import {
     ListItemButton,
     ListItemText,
     Typography,
-    Box,
 } from '@mui/material';
 import { waypointsAtom, allPointsAtom } from '../../../state/routingAtoms';
 import type { LatLngTuple } from '../../../types';

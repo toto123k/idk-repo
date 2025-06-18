@@ -29,12 +29,12 @@ export const CoordinatesModal: FC<CoordinatesModalProps> = ({ open, onClose, onS
 
     useEffect(() => {
         const newErrs = rows.map(({ lat, lng }) => {
-            const e: { lat?: string; lng?: string } = {}
+            const inputError: { lat?: string; lng?: string } = {}
             const ltn = parseFloat(lat)
-            if (isNaN(ltn) || ltn < -90 || ltn > 90) e.lat = 'Must be between –90 and 90'
+            if (isNaN(ltn) || ltn < -90 || ltn > 90) inputError.lat = 'Must be between –90 and 90'
             const lgn = parseFloat(lng)
-            if (isNaN(lgn) || lgn < -180 || lgn > 180) e.lng = 'Must be between –180 and 180'
-            return e
+            if (isNaN(lgn) || lgn < -180 || lgn > 180) inputError.lng = 'Must be between –180 and 180'
+            return inputError
         })
 
         setErrors(newErrs)

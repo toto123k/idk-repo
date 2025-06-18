@@ -1,4 +1,3 @@
-// src/components/RestrictedZonesLayer.tsx
 import { useEffect, useRef, useCallback } from 'react';
 import { FeatureGroup } from 'react-leaflet';
 import { useAtom, useSetAtom } from 'jotai';

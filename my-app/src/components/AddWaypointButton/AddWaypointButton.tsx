@@ -7,8 +7,6 @@ import { waypointsAtom, srcPosAtom, tgtPosAtom } from '../../state/routingAtoms'
 import type { LatLngTuple } from '../../types';
 import { InsertWaypointDialog } from './AddWaypointDialog/AddWaypointDialog';
 
-// Assuming these styles are for the container of this button
-// If this button is part of a larger panel, this Box might not be needed here.
 const boxStyles = {
     padding: '8px',
     backgroundColor: 'white',
@@ -16,11 +14,6 @@ const boxStyles = {
     boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
     display: "flex",
     justifyContent: "center"
-    // If it needs to float on the map:
-    // position: 'absolute',
-    // top: '10px',
-    // left: '50px',
-    // zIndex: 1000,
 };
 
 const buttonStyles = {

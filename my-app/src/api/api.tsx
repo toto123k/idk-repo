@@ -1,4 +1,3 @@
-// src/services/ApiService.ts
 import axios from 'axios'
 import type { LatLngTuple } from '../types'
 import type { RouteResponse } from '../types'
