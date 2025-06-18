@@ -2,7 +2,6 @@
 import { atom } from 'jotai'
 import type { getDrawHandlers } from '../utils/leafletDrawUtils';
 
-// — your zone types —
 export type LatLng = { lat: number; lng: number }
 export type RestrictedZone = {
   id: string

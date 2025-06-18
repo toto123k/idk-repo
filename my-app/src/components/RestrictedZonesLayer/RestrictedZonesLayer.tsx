@@ -2,8 +2,8 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { FeatureGroup } from 'react-leaflet';
 import { useAtom, useSetAtom } from 'jotai';
-import L from 'leaflet'; // For L.Polygon, L.LayerGroup, L.LatLng
-import 'leaflet-draw/dist/leaflet.draw.css'; // Main CSS for Leaflet.Draw
+import L from 'leaflet';
+import 'leaflet-draw/dist/leaflet.draw.css';
 
 import {
     restrictedZonesAtom,
@@ -12,12 +12,11 @@ import {
     drawHandlersAtom,
     type RestrictedZone,
     type DrawingMode,
-    // tempPolygonAtom, // Include if used elsewhere or for future features
-} from '../../state/restrictedZonesAtoms'; // Adjust path
+} from '../../state/restrictedZonesAtoms';
 import { toast } from 'react-toastify';
 
-import { hideLeafletDrawToolbar } from '../../utils/leafletDrawUtils'; // Adjust path
-import { useRenderRestrictedZones } from '../../hooks/useRenderRestrictedZones'; // Adjust path
+import { hideLeafletDrawToolbar } from '../../utils/leafletDrawUtils';
+import { useRenderRestrictedZones } from '../../hooks/useRenderRestrictedZones';
 import { useLeafletDrawControl } from '../../hooks/useLeafletControl';
 
 export const RestrictedZonesLayer = () => {
@@ -25,14 +24,11 @@ export const RestrictedZonesLayer = () => {
     const [drawingMode, setDrawingMode] = useAtom(drawingModeAtom);
     const [selectedZoneId, setSelectedZoneId] = useAtom(selectedZoneIdAtom);
     const setDrawHandlers = useSetAtom(drawHandlersAtom);
-    // const setTempPolygon = useSetAtom(tempPolygonAtom); // Keep if needed
 
-    const featureGroupRef = useRef<L.FeatureGroup>(null!); // `null!` used as in original
+    const featureGroupRef = useRef<L.FeatureGroup>(null!);
 
-    // 1. Hide built-in Leaflet.Draw toolbar
     useEffect(() => {
-        const cleanupStyle = hideLeafletDrawToolbar();
-        return cleanupStyle;
+        hideLeafletDrawToolbar();
     }, []);
 
     // 2. Callbacks for Leaflet.Draw events (managed by useLeafletDrawControl)
@@ -43,9 +39,9 @@ export const RestrictedZonesLayer = () => {
                 id: `zone-${Date.now()}`,
                 name: `Zone ${prevZones.length + 1}`,
                 coordinates: coords,
-                color: '#ff0000', // Default color from draw options
-                fillColor: '#ff0000', // Default fill color
-                fillOpacity: 0.2, // Default fill opacity
+                color: '#ff0000',
+                fillColor: '#ff0000',
+                fillOpacity: 0.2,
             };
             return [...prevZones, newZone];
         });
@@ -56,8 +52,7 @@ export const RestrictedZonesLayer = () => {
     const handleZoneEdited = useCallback((editedLayers: L.LayerGroup) => {
         let updatedCount = 0;
         editedLayers.eachLayer(layer => {
-            // Layer type assertion and options access
-            const polygonLayer = layer as L.Polygon; // Assuming only polygons are edited
+            const polygonLayer = layer as L.Polygon;
             const zoneId = polygonLayer.options.zoneId;
 
             if (zoneId) {
@@ -79,7 +74,7 @@ export const RestrictedZonesLayer = () => {
     const handleZoneDeleted = useCallback((deletedLayers: L.LayerGroup) => {
         const removedIds: string[] = [];
         deletedLayers.eachLayer(layer => {
-            const zoneId = (layer as L.Polygon).options.zoneId; // Assuming L.Polygon
+            const zoneId = (layer as L.Polygon).options.zoneId;
             if (zoneId) {
                 removedIds.push(zoneId);
             } else {

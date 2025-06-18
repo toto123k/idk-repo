@@ -1,16 +1,16 @@
 // src/hooks/useLeafletDrawControl.ts
 import { useEffect, useRef } from 'react';
 import L from 'leaflet';
-import 'leaflet-draw'; // Import for side effects and types
+import 'leaflet-draw';
 
-import { getDrawHandlers } from '../utils/leafletDrawUtils'; // Adjust path
-import type { DrawingMode, DrawHandlers } from '../state/restrictedZonesAtoms'; // Adjust path
+import { getDrawHandlers } from '../utils/leafletDrawUtils';
+import type { DrawingMode, DrawHandlers } from '../state/restrictedZonesAtoms'; 
 
 export interface UseLeafletDrawControlOptions {
     featureGroupRef: React.RefObject<L.FeatureGroup | null>;
     onZoneCreated: (layer: L.Polygon) => void;
-    onZoneEdited: (editedLayers: L.LayerGroup) => void; // L.LayerGroup contains edited layers
-    onZoneDeleted: (deletedLayers: L.LayerGroup) => void; // L.LayerGroup contains deleted layers
+    onZoneEdited: (editedLayers: L.LayerGroup) => void;
+    onZoneDeleted: (deletedLayers: L.LayerGroup) => void;
     setDrawHandlersAtom: (handlers: DrawHandlers) => void;
     drawingMode: DrawingMode;
 }
@@ -24,17 +24,15 @@ export const useLeafletDrawControl = ({
     drawingMode,
 }: UseLeafletDrawControlOptions): void => {
     const drawControlRef = useRef<L.Control.Draw | null>(null);
-    const mapInstanceRef = useRef<L.Map | null>(null); // To store the map instance
+    const mapInstanceRef = useRef<L.Map | null>(null);
     const handlersSetRef = useRef(false);
 
     useEffect(() => {
         const featureGroup = featureGroupRef.current;
         if (!featureGroup) return;
 
-        // Leaflet.FeatureGroup typically has a _map property once added to a map
         const map = (featureGroup as any)._map as L.Map | undefined;
         if (!map) {
-            // console.warn('Map not found on feature group. Draw control not initialized.');
             return;
         }
         mapInstanceRef.current = map;
@@ -57,20 +55,17 @@ export const useLeafletDrawControl = ({
             map.addControl(drawControlRef.current);
         }
 
-        // Stash handlers once toolbar is available
         if ((drawControlRef.current as any)?._toolbars && !handlersSetRef.current) {
             setDrawHandlersAtom(getDrawHandlers(drawControlRef));
             handlersSetRef.current = true;
         }
-
-        // Event Handlers
         const handleCreated = (e: L.LeafletEvent) => {
             const event = e as L.DrawEvents.Created;
             if (event.layerType === 'polygon' && event.layer instanceof L.Polygon) {
                 onZoneCreated(event.layer);
             }
         };
-
+        
         const handleEdited = (e: L.LeafletEvent) => {
             const event = e as L.DrawEvents.Edited;
             onZoneEdited(event.layers);
@@ -93,15 +88,12 @@ export const useLeafletDrawControl = ({
             if (drawControlRef.current && mapInstanceRef.current) {
                 mapInstanceRef.current.removeControl(drawControlRef.current);
             }
-            // Reset refs if control is fully managed by this hook instance
-            // drawControlRef.current = null;
-            // handlersSetRef.current = false; // Reset if re-initialization is possible
         };
     }, [featureGroupRef, onZoneCreated, onZoneEdited, onZoneDeleted, setDrawHandlersAtom]);
 
     // Effect for managing drawing modes
     useEffect(() => {
-        const tb = drawControlRef.current?._toolbars as any;
+        const tb = (drawControlRef.current as any)._toolbars;
         if (!tb) return;
 
         // Disable all modes first
@@ -123,5 +115,5 @@ export const useLeafletDrawControl = ({
             default: // 'idle' or other modes
                 break;
         }
-    }, [drawingMode]); // Relies on drawControlRef.current being stable after first effect
+    }, [drawingMode]);
 };

@@ -104,7 +104,6 @@ export const RestrictedZonesControlPanel = () => {
         setSelectedZoneId(zoneId === selectedZoneId ? null : zoneId)
     }
 
-    // “New Zone…” dialog
     const openNewZoneDialog = () => setNewZoneDialogOpen(true)
     const closeNewZoneDialog = () => setNewZoneDialogOpen(false)
     const chooseDrawOnMap = () => {

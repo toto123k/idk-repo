@@ -32,9 +32,7 @@ export const getDrawHandlers = (
 
 export const hideLeafletDrawToolbar = (): (() => void) => {
     const styleId = 'leaflet-draw-toolbar-hider';
-    // Prevent adding multiple style tags
     if (document.getElementById(styleId)) {
-        // Return a no-op cleanup if style already exists from another instance (though unlikely in typical SPA)
         return () => { };
     }
 

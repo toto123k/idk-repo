@@ -33,7 +33,7 @@ export const useRenderRestrictedZones = ({
                     fillColor: zone.fillColor,
                     fillOpacity: zone.fillOpacity,
                     weight: isSelected ? 3 : 2,
-                    zoneId: zone.id, // Store zoneId in options for easy retrieval
+                    zoneId: zone.id,
                 }
             );
 

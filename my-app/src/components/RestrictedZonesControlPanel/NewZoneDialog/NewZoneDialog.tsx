@@ -25,7 +25,7 @@ export const NewZoneDialog: React.FC<Props> = ({
     <Dialog open={open} onClose={onClose}>
         <DialogTitle>Create new zone</DialogTitle>
         <DialogContent>
-            <Stack spacing={2} sx={{ mt: 1, mb: 1 }}>
+            <Stack spacing={2}>
                 <Button
                     variant="contained"
                     startIcon={<MapIcon />}

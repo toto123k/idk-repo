@@ -1,16 +1,7 @@
 // src/components/CoordinatesModal.tsx
 import { type FC, useState, useEffect } from 'react'
-import {
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    Button,
-    IconButton,
-    TextField,
-    Typography,
-    Box,
-} from '@mui/material'
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography } from '@mui/material'
+import { CoordinateRows } from './CoordinateRows'
 import {
     Add as AddIcon,
     Delete as DeleteIcon,
@@ -26,20 +17,16 @@ interface CoordinatesModalProps {
 }
 
 export const CoordinatesModal: FC<CoordinatesModalProps> = ({ open, onClose, onSubmit }) => {
-    // store user input
     const [rows, setRows] = useState<{ lat: string; lng: string }[]>([
         { lat: '', lng: '' },
         { lat: '', lng: '' },
         { lat: '', lng: '' },
     ])
 
-    // validation errors for each row
     const [errors, setErrors] = useState<{ lat?: string; lng?: string }[]>([])
 
-    // overall form validity
     const [isValid, setIsValid] = useState(false)
 
-    // recalc errors + validity whenever rows change
     useEffect(() => {
         const newErrs = rows.map(({ lat, lng }) => {
             const e: { lat?: string; lng?: string } = {}
@@ -89,37 +76,7 @@ export const CoordinatesModal: FC<CoordinatesModalProps> = ({ open, onClose, onS
                     Enter at least three latitude/longitude pairs.
                 </Typography>
 
-                {rows.map((r, idx) => (
-                    <Box key={idx} sx={{ display: 'flex', gap: 1, mb: 2 }}>
-                        <TextField
-                            label="Latitude"
-                            value={r.lat}
-                            onChange={e => handleChange(idx, 'lat', e.target.value)}
-                            error={!!errors[idx]?.lat}
-                            helperText={errors[idx]?.lat}
-                            size="small"
-                            fullWidth
-                        />
-                        <TextField
-                            label="Longitude"
-                            value={r.lng}
-                            onChange={e => handleChange(idx, 'lng', e.target.value)}
-                            error={!!errors[idx]?.lng}
-                            helperText={errors[idx]?.lng}
-                            size="small"
-                            fullWidth
-                        />
-                        <IconButton onClick={() => handleRemove(idx)} disabled={rows.length <= 3}>
-                            <DeleteIcon />
-                        </IconButton>
-                    </Box>
-                ))}
-
-                <Box textAlign="center">
-                    <Button startIcon={<AddIcon />} onClick={handleAdd}>
-                        Add Coordinate
-                    </Button>
-                </Box>
+                <CoordinateRows rows={rows} errors={errors} onChange={handleChange} onRemove={handleRemove} onAdd={handleAdd} />
             </DialogContent>
 
             <DialogActions>
@@ -133,4 +90,3 @@ export const CoordinatesModal: FC<CoordinatesModalProps> = ({ open, onClose, onS
         </Dialog>
     )
 }
-
