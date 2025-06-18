@@ -18,7 +18,6 @@ const boxStyles = {
 
 const buttonStyles = {
     minWidth: '100%',
-    // padding: '6px 10px', // Example padding
 };
 
 export const AddWaypointButton = () => {

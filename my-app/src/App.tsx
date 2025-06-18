@@ -11,10 +11,9 @@ import { AddWaypointButton } from './components/AddWaypointButton/AddWaypointBut
 import { RestrictedZonesLayer } from './components/RestrictedZonesLayer/RestrictedZonesLayer'
 import { RestrictedZonesControlPanel } from './components/RestrictedZonesControlPanel/RestrictedZonesControlPanel'
 
-// A basic MUI theme instance
 const theme = createTheme({
   palette: {
-    mode: 'light', // or 'dark'
+    mode: 'light',
   },
 });
 
