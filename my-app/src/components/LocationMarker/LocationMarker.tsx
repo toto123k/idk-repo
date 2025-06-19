@@ -12,9 +12,9 @@ const COLORS = {
     target: { bg: '#d32f2f', border: '#c62828' }
 }
 
-const createMarkerIcon = (data: LocationData) => {
-    const colors = COLORS[data.type]
-    const Icon = data.type === 'source' ? MyLocation : Flag
+const createMarkerIcon = (type: LocationData['type']) => {
+    const colors = COLORS[type]
+    const Icon = type === 'source' ? MyLocation : Flag
 
     const html = ReactDOMServer.renderToString(
         <div className="marker-container">
@@ -27,7 +27,7 @@ const createMarkerIcon = (data: LocationData) => {
             >
                 <Icon className="marker-icon" />
             </div>
-            <span className="marker-label">{data.type}</span>
+            <span className="marker-label">{type}</span>
         </div>
     )
 
@@ -40,27 +40,24 @@ const createMarkerIcon = (data: LocationData) => {
     })
 }
 
-interface LocationMarkerProps {
-    data: LocationData
-}
+type LocationMarkerProps = LocationData;
 
-export const LocationMarker: React.FC<LocationMarkerProps> = ({ data }) => {
+export const LocationMarker: React.FC<LocationMarkerProps> = ({ position, type }) => {
     const markerRef = useRef<L.Marker>(null)
-    const [currentData, setCurrentData] = useState<LocationData>(data)
+    const [currentPosition, setCurrentPosition] = useState<LocationData["position"]>(position)
 
     const handleDragEnd = useCallback(() => {
         const marker = markerRef.current
         if (marker) {
             const newPosition = marker.getLatLng()
-            const newPos: [number, number] = [newPosition.lat, newPosition.lng]
-            setCurrentData(prev => ({ ...prev, position: newPos }))
+            setCurrentPosition(newPosition)
         }
     }, [])
 
     return (
         <Marker
-            position={currentData.position}
-            icon={createMarkerIcon(currentData)}
+            position={position}
+            icon={createMarkerIcon(type)}
             draggable={true}
             ref={markerRef}
             eventHandlers={{
@@ -68,7 +65,7 @@ export const LocationMarker: React.FC<LocationMarkerProps> = ({ data }) => {
             }}
         >
             <Popup>
-                <LocationDetailsPopup data={currentData} />
+                <LocationDetailsPopup position={currentPosition} type={type} />
             </Popup>
         </Marker>
     )
