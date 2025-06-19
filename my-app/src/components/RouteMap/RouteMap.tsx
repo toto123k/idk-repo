@@ -3,13 +3,13 @@ import { useState, useMemo } from 'react'
 import { useRoute } from '../../hooks/useRoute'
 import { useRouteToast } from '../../hooks/useRouteToast'
 import { LocationMarker } from '../LocationMarker/LocationMarker'
-import type { LatLngTuple } from '../../types'
 import 'react-toastify/dist/ReactToastify.css'
 import 'leaflet/dist/leaflet.css'
+import type { LocationData } from '../../types/types'
 
 interface RouteMapProps {
-    source: LatLngTuple
-    target: LatLngTuple
+    source: LocationData["position"]
+    target: LocationData["position"]
 }
 
 export const RouteMap: React.FC<RouteMapProps> = ({ source, target }) => {
@@ -20,8 +20,10 @@ export const RouteMap: React.FC<RouteMapProps> = ({ source, target }) => {
     // <-- new hook handles all toast side-effects
     useRouteToast(loading, error)
 
-    const center = useMemo<LatLngTuple>(
-        () => [(srcPos[0] + tgtPos[0]) / 2, (srcPos[1] + tgtPos[1]) / 2],
+    const center = useMemo<LocationData["position"]>(
+        () => {
+            return { lat: ((srcPos.lat + tgtPos.lat) / 2), lng: ((srcPos.lng + tgtPos.lng) / 2) }
+        },
         [srcPos, tgtPos]
     )
 
@@ -33,18 +35,20 @@ export const RouteMap: React.FC<RouteMapProps> = ({ source, target }) => {
             />
 
             <LocationMarker
-                data={{ type: 'source', position: srcPos }}
-                onMarkerEndDrag={d => setSrcPos(d.position)}
+                type='source'
+                position={srcPos}
+                onMarkerEndDrag={pos => setSrcPos(pos)}
             />
 
             <LocationMarker
-                data={{ type: 'target', position: tgtPos }}
-                onMarkerEndDrag={d => setTgtPos(d.position)}
+                position={tgtPos}
+                type='target'
+                onMarkerEndDrag={pos => setTgtPos(pos)}
             />
 
             {!loading && route && (
                 <Polyline
-                    positions={route.map(([lng, lat]) => [lat, lng] as LatLngTuple)}
+                    positions={route.map(([lng, lat]) => { return { lat, lng } })}
                     pathOptions={{ color: 'red', weight: 4 }}
                 />
             )}

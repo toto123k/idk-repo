@@ -5,39 +5,40 @@ import type { LocationData } from '../../types/types'
 import { LocationDetailsPopup } from '../LocationDetailsPopup/LocationDetailsPopup'
 import { createDivIcon } from '../../utils/createDivIcon'
 
-interface Props {
-    data: LocationData
-    onMarkerEndDrag?: (updated: LocationData) => void
+interface Props extends LocationData {
+    onMarkerEndDrag?: (updated: LocationData["position"]) => void
 }
 
+
+
 export const LocationMarker: React.FC<Props> = ({
-    data,
+    type,
+    position,
     onMarkerEndDrag,
 }) => {
     const markerRef = useRef<L.Marker>(null)
-    const [currentData, setCurrentData] = useState(data)
+    const [currentPosition, setCurrentPosition] = useState<LocationData["position"]>(position)
 
     const onDragEnd = useCallback(() => {
         const pos = markerRef.current?.getLatLng()
         if (pos) {
-            setCurrentData(prev => {
-                const updated = { ...prev, position: [pos.lat, pos.lng] }
-                onMarkerEndDrag?.(updated)
-                return updated
+            setCurrentPosition(() => {
+                onMarkerEndDrag?.(pos)
+                return pos
             })
         }
     }, [onMarkerEndDrag])
 
     return (
         <Marker
-            position={currentData.position}
-            icon={createDivIcon(currentData.type)}
-            draggable
+            position={position}
+            icon={createDivIcon(type)}
+            draggable={true}
             ref={markerRef}
             eventHandlers={{ dragend: onDragEnd }}
         >
             <Popup>
-                <LocationDetailsPopup data={currentData} />
+                <LocationDetailsPopup position={currentPosition} type={type} />
             </Popup>
         </Marker>
     )

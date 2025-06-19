@@ -1,4 +1,6 @@
+import type { LatLngLiteral } from "leaflet";
+
 export interface LocationData {
     type: 'source' | 'target';
-    position: [number, number];
+    position: LatLngLiteral
 }
