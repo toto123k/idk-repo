@@ -9,10 +9,9 @@ import { AttributionControl, ZoomControl } from 'react-leaflet'
 import type { SxProps, Theme } from '@mui/material/styles';
 import { AddWaypointButton } from './components/AddWaypointButton/AddWaypointButton'
 
-// A basic MUI theme instance
 const theme = createTheme({
   palette: {
-    mode: 'light', // or 'dark'
+    mode: 'light',
   },
 });
 
