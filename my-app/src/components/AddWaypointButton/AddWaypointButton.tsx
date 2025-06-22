@@ -1,4 +1,3 @@
-// src/components/RoutingLayer/AddWaypointButton.tsx
 import { useState } from 'react';
 import { useAtom } from 'jotai';
 import { Box, Button } from '@mui/material';
