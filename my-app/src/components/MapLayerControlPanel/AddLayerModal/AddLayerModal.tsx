@@ -37,7 +37,7 @@ export const AddLayerModal: React.FC<AddLayerModalProps> = ({ open, onClose, onA
                 <TextField
                     autoFocus
                     margin="dense"
-                    id="name"
+                    id="map-layer-name"
                     label="Layer Name"
                     type="text"
                     fullWidth
@@ -47,7 +47,7 @@ export const AddLayerModal: React.FC<AddLayerModalProps> = ({ open, onClose, onA
                 />
                 <TextField
                     margin="dense"
-                    id="url"
+                    id="map-layer-url"
                     label="Tile URL Template"
                     type="url"
                     fullWidth
@@ -60,8 +60,8 @@ export const AddLayerModal: React.FC<AddLayerModalProps> = ({ open, onClose, onA
             </DialogContent>
             <DialogActions>
                 <Button onClick={onClose}>Cancel</Button>
-                <Button onClick={handleSave} variant="contained">Add</Button>
+                <Button id="add-layer-button" onClick={handleSave} variant="contained">Add</Button>
             </DialogActions>
-        </Dialog>
+        </Dialog >
     );
 };
