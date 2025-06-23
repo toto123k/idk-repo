@@ -1,16 +1,9 @@
+import type { LatLngLiteral } from "leaflet"
+
 export type LocationType = 'source' | 'target' | 'waypoint'
 
 export interface LocationData {
     type: LocationType
-    position: [number, number]
-    order?: number // only relevant for waypoints
+    position: LatLngLiteral
+    order?: number
 }
-
-// Define the structure for a map layer
-export interface MapLayer {
-    id: string;
-    name: string;
-    url: string;
-    attribution: string;
-}
-

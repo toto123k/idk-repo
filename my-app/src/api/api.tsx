@@ -1,13 +1,14 @@
 import axios from 'axios'
-import type { LatLngTuple } from '../types'
-import type { RouteResponse } from '../types'
+import type { LocationData } from '../types/types';
+import type { RouteResponse } from '../types';
+import type { LatLngLiteral } from 'leaflet';
 
 interface ApiRouteRequestPayload {
-    coordinates: { lat: number; lon: number }[]
-    avoid_zones?: { lon: number; lat: number }[][]
+    coordinates: LatLngLiteral[];
+    avoid_zones?: LatLngLiteral[][];
 }
 
-export class ApiService {
+class ApiService {
     private baseURL: string
     constructor(baseURL: string = 'http://localhost:8000') {
         this.baseURL = baseURL
@@ -19,22 +20,16 @@ export class ApiService {
      * @param points An array of [lat, lng] tuples. Must contain at least start & end.
      * @param avoidZones Optional array of polygons, each polygon is an array of [lat, lng].
      */
-    async fetchRoute(
-        points: LatLngTuple[],
-        avoidZones: LatLngTuple[][] = []
-    ): Promise<LatLngTuple[]> {
+    async fetchRoute(points: LocationData["position"][], avoidZones: LocationData["position"][][] = []
+    ): Promise<LocationData["position"][]> {
         if (points.length < 2) {
             throw new Error('At least two points (start and end) are required.')
         }
-        // map to API‐friendly keys
-        const apiCoords = points.map(([lat, lon]) => ({ lat, lon }))
-        const apiZones = avoidZones.map(polygon =>
-            polygon.map(([lat, lon]) => ({ lat, lon }))
-        )
+
         const payload: ApiRouteRequestPayload = {
-            coordinates: apiCoords,
+            coordinates: points,
             // only include if non-empty
-            ...(apiZones.length > 0 ? { avoid_zones: apiZones } : {}),
+            ...(avoidZones.length > 0 ? { avoid_zones: avoidZones } : {}),
         }
 
         try {
@@ -60,5 +55,4 @@ export class ApiService {
         }
     }
 }
-
-export const api = new ApiService()
+export const api = new ApiService();

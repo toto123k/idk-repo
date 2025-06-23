@@ -1,4 +1,3 @@
-// src/components/MapLayerControlPanel.tsx
 import { useState } from 'react'
 import { useAtom } from 'jotai'
 import {
@@ -79,14 +78,13 @@ export const MapLayerControlPanel: React.FC = () => {
         }
 
         const newLayer: MapLayer = {
-            id: newId,
-            name: name.trim(),
-            url: url.trim(),
-        }
-        setLayers(prev => [...prev, newLayer])
-        toast.success(`Added "${newLayer.name}" layer!`)
-        setModalOpen(false)
-    }
+            id: newId, name: name.trim(), url: url.trim(),
+        };
+
+        setLayers(prevLayers => [...prevLayers, newLayer]);
+        toast.success(`Added "${newLayer.name}" layer!`);
+        setModalOpen(false);
+    };
 
     const iconButtonSx = { alignSelf: 'center', mt: 1 };
     return (

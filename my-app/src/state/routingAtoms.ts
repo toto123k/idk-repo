@@ -1,56 +1,48 @@
-// src/state/routeAtoms.ts
 import { atom } from 'jotai'
-import type { LatLngTuple } from '../types'
 import { api } from '../api/api'
+import type { LatLngLiteral } from 'leaflet'
+import { splitAtom } from 'jotai/utils'
 import { getUpdatedZonesGeoJSON } from '../components/RestrictedZonesLayer/RestrictedZonesLayer'
+import { extractAvoidZones } from '../utils/geo'
 
-export const srcPosAtom = atom<LatLngTuple | null>(null)
-export const tgtPosAtom = atom<LatLngTuple | null>(null)
-export const waypointsAtom = atom<LatLngTuple[]>([])
+export const sourcePositionAtom = atom<LatLngLiteral>({ lat: 0, lng: 0 })
+export const targetPositionAtom = atom<LatLngLiteral>({ lat: 0, lng: 0 })
+export const routeAtom = atom<LatLngLiteral[] | null>(null)
 export const loadingAtom = atom<boolean>(false)
 export const errorAtom = atom<string | null>(null)
+export const waypointsAtom = atom<LatLngLiteral[]>([])
+export const splitWaypointsAtom = splitAtom(waypointsAtom)
 
-export const allPointsAtom = atom<LatLngTuple[]>((get) => {
-    const src = get(srcPosAtom)
-    const tgt = get(tgtPosAtom)
-    const wps = get(waypointsAtom)
-    return [src, ...wps, tgt].filter((p): p is LatLngTuple => p !== null)
-})
+export const allPointsAtom = atom<LatLngLiteral[]>((get) => {
+    const src = get(sourcePositionAtom);
+    const tg = get(targetPositionAtom);
+    const waypoints = get(waypointsAtom);
+    return [src, ...waypoints, tg].filter((p): p is LatLngLiteral => p !== null);
+});
 
-const _routeDataAtom = atom<LatLngTuple[] | null>(null)
-export const routeAtom = atom((get) => get(_routeDataAtom))
+
 
 export const fetchRouteAtom = atom(
     null,
     async (get, set) => {
-        const points = get(allPointsAtom)
-        if (points.length < 2) {
-            set(_routeDataAtom, null)
+        const coords = get(allPointsAtom)
+        if (coords.length < 2) {
+            set(routeAtom, null)
             return
         }
+
         const geojson = getUpdatedZonesGeoJSON()
-        const avoidZones: LatLngTuple[][] = geojson.features.flatMap(feat => {
-            const geom = feat.geometry
-            if (geom.type === 'Polygon') {
-                return [
-                    geom.coordinates[0].map(([lng, lat]) => [lat, lng] as LatLngTuple)
-                ]
-            }
-            if (geom.type === 'MultiPolygon') {
-                return geom.coordinates.map(polygon =>
-                    polygon[0].map(([lng, lat]) => [lat, lng] as LatLngTuple)
-                )
-            }
-            return []
-        })
+        console.log(geojson)
+        const avoidZones: LatLngLiteral[][] = extractAvoidZones(geojson)
+
         set(loadingAtom, true)
         set(errorAtom, null)
         try {
-            const route = await api.fetchRoute(points, avoidZones)
-            set(_routeDataAtom, route)
+            const route = await api.fetchRoute(coords, avoidZones)
+            set(routeAtom, route)
         } catch (err: any) {
             set(errorAtom, err.message ?? 'Failed to fetch route')
-            set(_routeDataAtom, null)
+            set(routeAtom, null)
         } finally {
             set(loadingAtom, false)
         }

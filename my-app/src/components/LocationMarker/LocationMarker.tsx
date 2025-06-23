@@ -1,45 +1,44 @@
-// components/LocationMarker/LocationMarker.tsx
 import { Marker, Popup } from 'react-leaflet'
 import { useRef, useState, useCallback } from 'react'
 import type { LocationData } from '../../types/types'
 import { LocationDetailsPopup } from '../LocationDetailsPopup/LocationDetailsPopup'
 import { createDivIcon } from '../../utils/createDivIcon'
 
-interface Props {
-    data: LocationData
-    onMarkerEndDrag?: (updated: LocationData) => void
+interface Props extends LocationData {
+    onMarkerEndDrag?: (updated: LocationData["position"]) => void
 }
 
 export const LocationMarker: React.FC<Props> = ({
-    data,
+    type,
+    position,
+    order,
     onMarkerEndDrag,
 }) => {
     const markerRef = useRef<L.Marker>(null)
-    const [currentData, setCurrentData] = useState(data)
+    const [currentPosition, setCurrentPosition] = useState<LocationData["position"]>(position)
 
     const onDragEnd = useCallback(() => {
-        const pos = markerRef.current?.getLatLng()
-        if (pos) {
-            setCurrentData(prev => {
-                const updated = { ...prev, position: [pos.lat, pos.lng] as [number, number] }
-                onMarkerEndDrag?.(updated)
-                return updated
+        const newPosition = markerRef.current?.getLatLng()
+        if (newPosition) {
+            setCurrentPosition(() => {
+                onMarkerEndDrag?.(newPosition)
+                return newPosition
             })
         }
     }, [onMarkerEndDrag])
 
     return (
         <Marker
-            position={currentData.position}
-            icon={createDivIcon(currentData)}
-            draggable
+            position={position}
+            icon={createDivIcon({ type, order })}
+            draggable={true}
             ref={(marker) => {
                 if (marker) {
                     markerRef.current = marker
 
                     marker.once('add', () => {
-                        const el = marker.getElement()
-                        if (el) el.setAttribute('data-testid', `location-marker-${data.type}${data.type === "waypoint" ? "-" + data.order : ""}`)
+                        const element = marker.getElement()
+                        if (element) element.setAttribute('data-testid', `location-marker-${type}${type === "waypoint" ? "-" + order : ""}`)
                     })
                 }
             }}
@@ -47,7 +46,7 @@ export const LocationMarker: React.FC<Props> = ({
 
         >
             <Popup>
-                <LocationDetailsPopup data={currentData} />
+                <LocationDetailsPopup position={currentPosition} type={type} order={order} />
             </Popup>
         </Marker>
     )
