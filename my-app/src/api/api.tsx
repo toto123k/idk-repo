@@ -1,5 +1,6 @@
 import axios from 'axios'
-import type { LatLngTuple, RouteResponse } from '../types'
+import type { RouteResponse } from '../types'
+import type { LocationData } from '../types/types';
 
 
 
@@ -11,40 +12,48 @@ class ApiService {
     }
 
     /**
-     * Fetch route between two points
-     * @param source [lat, lng] tuple for starting point
-     * @param target [lat, lng] tuple for destination
-     * @returns Promise resolving to array of [lng, lat] coordinates
-     */
-    async fetchRoute(source: LatLngTuple, target: LatLngTuple): Promise<[number, number][]> {
+        * Fetch route between two points using a POST request with a JSON body.
+        * @param source [lat, lng] tuple for starting point
+        * @param target [lat, lng] tuple for destination
+        * @returns Promise resolving to array of [lng, lat] coordinates
+        */
+    async fetchRoute(source: LocationData["position"], target: LocationData["position"]): Promise<LocationData["position"][]> {
         try {
-            // API expects "lng,lat" format, so flip the coordinates
-            const startParam = `${source[1]},${source[0]}`
-            const endParam = `${target[1]},${target[0]}`
-
-            const response = await axios.get<RouteResponse>(`${this.baseURL}/route`, {
-                params: {
-                    start: startParam,
-                    end: endParam
+            const payload = {
+                start: {
+                    lat: source.lat,
+                    lon: source.lng
                 },
-                timeout: 10000 // 10 second timeout
-            })
+                end: {
+                    lat: target.lat,
+                    lon: target.lng
+                }
+            };
 
-            if (!Array.isArray(response.data.route)) {
-                throw new Error('Invalid route data received')
-            }
+            const response = await axios.post<RouteResponse>(
+                `${this.baseURL}/route`,
+                payload, // The JSON body for the POST request
+                {
+                    timeout: 10000 // 10 second timeout
+                }
+            );
 
-            return response.data.route
+            return response.data.route;
+
         } catch (error) {
             if (axios.isAxiosError(error)) {
-                console.error('Route fetch failed:', error.message)
+                console.error('Route fetch failed:', error.message);
                 if (error.response) {
-                    throw new Error(`Server error: ${error.response.status}`)
+
+                    const errorDetail = JSON.stringify(error.response.data.detail) || error.response.statusText;
+                    throw new Error(`Server error: ${error.response.status} - ${errorDetail}`);
                 } else if (error.request) {
-                    throw new Error('Network error: Unable to reach server')
+                    // The request was made but no response was received
+                    throw new Error('Network error: Unable to reach server');
                 }
             }
-            throw error
+            // Something else happened in setting up the request that triggered an Error
+            throw error;
         }
     }
 }

@@ -24,25 +24,21 @@ const coordinateValueStyle = {
     marginLeft: 2,
 };
 
-interface Props {
-    data: LocationData;
-}
-
-export const LocationDetailsPopup = ({ data }: Props) => {
+export const LocationDetailsPopup = ({ position, type }: LocationData) => {
     const { easting, northing, zoneNum, zoneLetter } = fromLatLon(
-        data.position[0],
-        data.position[1]
+        position.lat,
+        position.lng,
     );
 
     return (
         <Box sx={popupContentStyle}>
             <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1.5}>
                 <Typography variant="h6" sx={headerStyle}>
-                    {data.type} Point
+                    {type} Point
                 </Typography>
                 <Chip
-                    label={data.type.toUpperCase()}
-                    color={data.type === 'source' ? 'primary' : 'error'}
+                    label={type.toUpperCase()}
+                    color={type === 'source' ? 'primary' : 'error'}
                     size="small"
                 />
             </Stack>
@@ -53,7 +49,7 @@ export const LocationDetailsPopup = ({ data }: Props) => {
                 <Stack spacing={1}>
                     <Stack direction="row" justifyContent="space-between">
                         <Typography sx={coordinateLabelStyle} variant="body2">Lat/Lng:</Typography>
-                        <Typography sx={coordinateValueStyle} variant="body2">{`${data.position[0].toFixed(4)}, ${data.position[1].toFixed(4)}`}</Typography>
+                        <Typography sx={coordinateValueStyle} variant="body2">{`${position.lat.toFixed(4)}, ${position.lng.toFixed(4)}`}</Typography>
                     </Stack>
                     <Stack direction="row" justifyContent="space-between">
                         <Typography sx={coordinateLabelStyle} variant="body2">UTM:</Typography>

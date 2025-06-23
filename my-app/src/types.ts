@@ -1,5 +1,5 @@
-export type LatLngTuple = [number, number]
+import type { LocationData } from "./types/types";
 
 export interface RouteResponse {
-    route: [number, number][]
+    route: LocationData["position"][]
 }
