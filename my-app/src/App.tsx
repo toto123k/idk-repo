@@ -2,12 +2,12 @@ import { useMemo } from 'react'
 import { ToastContainer } from 'react-toastify'
 import { ThemeProvider, createTheme, CssBaseline, Box } from '@mui/material'
 import { MapShell } from './components/MapShell/MapShell'
-import type { LatLngTuple } from './types'
 import { RoutingLayer } from './components/RoutingLayer/RoutingLayer'
 import { MapLayerControlPanel } from './components/MapLayerControlPanel/MapLayerControlPanel'
 import { AttributionControl, ZoomControl } from 'react-leaflet'
 import type { SxProps, Theme } from '@mui/material/styles';
 import { AddWaypointButton } from './components/AddWaypointButton/AddWaypointButton'
+import type { LocationData } from './types/types'
 
 const theme = createTheme({
   palette: {
@@ -15,15 +15,17 @@ const theme = createTheme({
   },
 });
 
-const INITIAL_SOURCE: LatLngTuple = [32.0853, 34.7818]
-const INITIAL_TARGET: LatLngTuple = [31.7683, 35.2137]
+const source: LocationData["position"] = { lat: 32.0853, lng: 34.7818 }
+const target: LocationData["position"] = { lat: 31.7683, lng: 35.2137 }
 
 export const App = () => {
-  const center = useMemo<LatLngTuple>(
-    () => [
-      (INITIAL_SOURCE[0] + INITIAL_TARGET[0]) / 2,
-      (INITIAL_SOURCE[1] + INITIAL_TARGET[1]) / 2,
-    ],
+  const center = useMemo<LocationData["position"]>(
+    () => {
+      return {
+        lat: (source.lat + target.lat) / 2,
+        lng: (source.lng + target.lng) / 2,
+      }
+    },
     []
   )
 
@@ -49,7 +51,7 @@ export const App = () => {
       />
 
       <MapShell center={center} zoom={9}>
-        <RoutingLayer initialSource={INITIAL_SOURCE} initialTarget={INITIAL_TARGET} />
+        <RoutingLayer initialSource={source} initialTarget={target} />
         <Box sx={
           topLeftContainerSx
         }>

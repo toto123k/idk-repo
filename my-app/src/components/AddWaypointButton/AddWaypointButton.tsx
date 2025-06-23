@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { useAtom } from 'jotai';
 import { Box, Button } from '@mui/material';
 import AddLocationAltIcon from '@mui/icons-material/AddLocationAlt';
-import { waypointsAtom, srcPosAtom, tgtPosAtom } from '../../state/routingAtoms';
-import type { LatLngTuple } from '../../types';
+import { waypointsAtom, sourcePositionAtom, targetPositionAtom } from '../../state/routingAtoms';
 import { InsertWaypointDialog } from './AddWaypointDialog/AddWaypointDialog';
+import type { LatLngLiteral } from 'leaflet';
 
 const boxStyles = {
     padding: '8px',
@@ -19,22 +19,18 @@ const buttonStyles = {
 
 export const AddWaypointButton = () => {
     const [waypoints, setWaypoints] = useAtom(waypointsAtom);
-    const [srcPos] = useAtom(srcPosAtom);
-    const [tgtPos] = useAtom(tgtPosAtom);
+    const [sourcePosition] = useAtom(sourcePositionAtom);
+    const [targetPosition] = useAtom(targetPositionAtom);
 
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
     const handleAddWaypointClick = () => {
-        if (!srcPos || !tgtPos) return; // Button should be disabled anyway
-
         if (waypoints.length === 0) {
-            // No existing waypoints: Add one directly between source and target
-            const newWaypointLat = (srcPos[0] + tgtPos[0]) / 2;
-            const newWaypointLng = (srcPos[1] + tgtPos[1]) / 2;
-            const newWaypoint: LatLngTuple = [newWaypointLat, newWaypointLng];
+            const newWaypointLat = (sourcePosition.lat + targetPosition.lat) / 2;
+            const newWaypointLng = (sourcePosition.lng + targetPosition.lng) / 2;
+            const newWaypoint: LatLngLiteral = { lat: newWaypointLat, lng: newWaypointLng };
             setWaypoints([newWaypoint]);
         } else {
-            // Waypoints exist: Open the dialog to choose insertion point
             setIsDialogOpen(true);
         }
     };
@@ -47,7 +43,7 @@ export const AddWaypointButton = () => {
                     onClick={handleAddWaypointClick}
                     startIcon={<AddLocationAltIcon />}
                     sx={buttonStyles}
-                    disabled={!srcPos || !tgtPos}
+                    disabled={!sourcePosition || !targetPosition}
                 >
                     Add Waypoint
                 </Button>

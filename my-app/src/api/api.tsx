@@ -1,12 +1,11 @@
-import axios from 'axios';
-import type { LatLngTuple } from '../types';
-
+import axios from 'axios'
+import type { LocationData } from '../types/types';
 import type { RouteResponse } from '../types';
 
 interface ApiRouteRequestPayload {
     coordinates: {
         lat: number;
-        lon: number;
+        lng: number;
     }[];
 }
 
@@ -22,15 +21,15 @@ class ApiService {
      * @param points An array of [lat, lng] tuples. Must contain at least a start and end point.
      * @returns Promise resolving to array of [lng, lat] coordinates for the full route.
      */
-    async fetchRoute(points: LatLngTuple[]): Promise<LatLngTuple[]> {
+    async fetchRoute(points: LocationData["position"][]): Promise<LocationData["position"][]> {
         if (points.length < 2) {
             throw new Error("At least two points (start and end) are required to fetch a route.");
         }
 
         try {
             const apiCoordinates = points.map(point => ({
-                lat: point[0],
-                lon: point[1]
+                lat: point.lat,
+                lng: point.lng
             }));
 
             const payload: ApiRouteRequestPayload = {

@@ -60,7 +60,7 @@ export const MapLayerControlPanel: React.FC = () => {
 
         setLayers(prevLayers => [...prevLayers, newLayer]);
         toast.success(`Added "${newLayer.name}" layer!`);
-        setModalOpen(false); // Close modal on success
+        setModalOpen(false);
     };
 
     return (

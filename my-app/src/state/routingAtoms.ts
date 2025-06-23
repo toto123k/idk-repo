@@ -1,33 +1,32 @@
-import { atom } from 'jotai';
-import type { LatLngTuple } from '../types';
-import { api } from '../api/api';
+import { atom } from 'jotai'
+import { api } from '../api/api'
+import type { LatLngLiteral } from 'leaflet'
+import { splitAtom } from 'jotai/utils'
 
-export const srcPosAtom = atom<LatLngTuple | null>(null);
-export const tgtPosAtom = atom<LatLngTuple | null>(null);
-export const waypointsAtom = atom<LatLngTuple[]>([]);
-export const loadingAtom = atom<boolean>(false);
-export const errorAtom = atom<string | null>(null);
+export const sourcePositionAtom = atom<LatLngLiteral>({ lat: 0, lng: 0 })
+export const targetPositionAtom = atom<LatLngLiteral>({ lat: 0, lng: 0 })
+export const routeAtom = atom<LatLngLiteral[] | null>(null)
+export const loadingAtom = atom<boolean>(false)
+export const errorAtom = atom<string | null>(null)
+export const waypointsAtom = atom<LatLngLiteral[]>([])
+export const splitWaypointsAtom = splitAtom(waypointsAtom)
 
-
-export const allPointsAtom = atom<LatLngTuple[]>((get) => {
-    const src = get(srcPosAtom);
-    const tg = get(tgtPosAtom);
+export const allPointsAtom = atom<LatLngLiteral[]>((get) => {
+    const src = get(sourcePositionAtom);
+    const tg = get(targetPositionAtom);
     const waypoints = get(waypointsAtom);
-    return [src, ...waypoints, tg].filter((p): p is LatLngTuple => p !== null);
+    return [src, ...waypoints, tg].filter((p): p is LatLngLiteral => p !== null);
 });
 
 
-const _routeDataAtom = atom<[number, number][] | null>(null);
-
-export const routeAtom = atom((get) => get(_routeDataAtom));
 
 export const fetchRouteAtom = atom(
-    null, // it has no value
+    null,
     async (get, set) => {
         const allPoints = get(allPointsAtom);
 
         if (allPoints.length < 2) {
-            set(_routeDataAtom, null); 
+            set(routeAtom, null);
             return;
         }
 
@@ -35,13 +34,13 @@ export const fetchRouteAtom = atom(
         set(errorAtom, null);
         try {
             const routeData = await api.fetchRoute(allPoints);
-            // Now you set the simple, private data atom. This is type-safe and clear.
-            set(_routeDataAtom, routeData);
+
+            set(routeAtom, routeData);
         } catch (e: any) {
             set(errorAtom, e.message || 'An unknown error occurred.');
-            set(_routeDataAtom, null); // Clear route on error
+            set(routeAtom, null);
         } finally {
-            set(loadingAtom, false);
+            set(loadingAtom, false)
         }
     }
 );
