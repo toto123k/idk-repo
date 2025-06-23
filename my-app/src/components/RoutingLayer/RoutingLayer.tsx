@@ -1,4 +1,4 @@
-import { useAtom } from 'jotai'
+import { useAtom, useAtomValue } from 'jotai'
 import { useHydrateAtoms } from 'jotai/utils'
 import { Polyline } from 'react-leaflet'
 import { useRouteToast } from '../../hooks/useRouteToast'
@@ -13,12 +13,6 @@ import {
 } from '../../state/routingAtoms'
 import { RoutingControlPanel } from './RoutingControlPanel/RoutingControlPanel'
 
-const RouteToastManager = () => {
-    const [loading] = useAtom(loadingAtom)
-    const [error] = useAtom(errorAtom)
-    useRouteToast(loading, error)
-    return null
-}
 
 interface RoutingLayerProps {
     initialSource: LatLngLiteral
@@ -36,8 +30,12 @@ export const RoutingLayer: React.FC<RoutingLayerProps> = ({
 
     const [srcPos, setSrcPos] = useAtom(srcPosAtom)
     const [tgtPos, setTgtPos] = useAtom(tgtPosAtom)
-    const [route] = useAtom(routeAtom)
-    
+    const route = useAtomValue(routeAtom)
+    const loading = useAtomValue(loadingAtom)
+    const error = useAtomValue(errorAtom)
+
+    useRouteToast(loading, error)
+
     return (
         <>
             <LocationMarker
@@ -54,7 +52,6 @@ export const RoutingLayer: React.FC<RoutingLayerProps> = ({
                 <Polyline positions={route} pathOptions={{ color: 'red', weight: 4 }} />
             )}
             <RoutingControlPanel />
-            <RouteToastManager />
         </>
     )
 }

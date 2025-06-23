@@ -32,9 +32,9 @@ class ApiService {
 
             const response = await axios.post<RouteResponse>(
                 `${this.baseURL}/route`,
-                payload, // The JSON body for the POST request
+                payload, 
                 {
-                    timeout: 10000 // 10 second timeout
+                    timeout: 10000
                 }
             );
 
@@ -48,15 +48,12 @@ class ApiService {
                     const errorDetail = JSON.stringify(error.response.data.detail) || error.response.statusText;
                     throw new Error(`Server error: ${error.response.status} - ${errorDetail}`);
                 } else if (error.request) {
-                    // The request was made but no response was received
                     throw new Error('Network error: Unable to reach server');
                 }
             }
-            // Something else happened in setting up the request that triggered an Error
             throw error;
         }
     }
 }
 
-// Export singleton instance
 export const api = new ApiService()

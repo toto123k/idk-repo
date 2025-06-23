@@ -1,4 +1,3 @@
-// components/LocationMarker/LocationMarker.tsx
 import { Marker, Popup } from 'react-leaflet'
 import { useRef, useState, useCallback } from 'react'
 import type { LocationData } from '../../types/types'

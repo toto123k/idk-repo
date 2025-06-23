@@ -5,10 +5,9 @@ import { MapShell } from './components/MapShell/MapShell'
 import { RoutingLayer } from './components/RoutingLayer/RoutingLayer'
 import type { LocationData } from './types/types'
 
-// A basic MUI theme instance
 const theme = createTheme({
   palette: {
-    mode: 'light', // or 'dark'
+    mode: 'light',
   },
 });
 

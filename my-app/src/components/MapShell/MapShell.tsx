@@ -1,12 +1,10 @@
-// src/components/MapShell/MapShell.tsx
-
 import { MapContainer, TileLayer, ZoomControl } from 'react-leaflet';
-import type { LatLngTuple } from '../../types';
 import 'leaflet/dist/leaflet.css';
 import { AttributionControl } from 'react-leaflet';
+import type { LatLngLiteral } from 'leaflet';
 
 interface MapShellProps {
-    center: LatLngTuple;
+    center: LatLngLiteral;
     zoom: number;
     children?: React.ReactNode;
 }
@@ -14,7 +12,6 @@ interface MapShellProps {
 export const MapShell: React.FC<MapShellProps> = ({ center, zoom, children }) => {
     return (
         <MapContainer
-            // Add this prop to remove the default attribution control
             attributionControl={false}
             doubleClickZoom={false}
             center={center}
