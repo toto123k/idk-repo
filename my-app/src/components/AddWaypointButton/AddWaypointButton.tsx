@@ -50,6 +50,7 @@ export const AddWaypointButton = () => {
                     startIcon={<AddLocationAltIcon />}
                     sx={buttonStyles}
                     disabled={!srcPos || !tgtPos}
+                    id='add-waypoint-button'
                 >
                     Add Waypoint
                 </Button>

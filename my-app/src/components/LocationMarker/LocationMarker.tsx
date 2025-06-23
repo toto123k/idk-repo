@@ -33,8 +33,18 @@ export const LocationMarker: React.FC<Props> = ({
             position={currentData.position}
             icon={createDivIcon(currentData)}
             draggable
-            ref={markerRef}
+            ref={(marker) => {
+                if (marker) {
+                    markerRef.current = marker
+
+                    marker.once('add', () => {
+                        const el = marker.getElement()
+                        if (el) el.setAttribute('data-testid', `location-marker-${data.type}${data.type === "waypoint" ? "-" + data.order : ""}`)
+                    })
+                }
+            }}
             eventHandlers={{ dragend: onDragEnd }}
+
         >
             <Popup>
                 <LocationDetailsPopup data={currentData} />

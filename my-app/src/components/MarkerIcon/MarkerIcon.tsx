@@ -26,7 +26,7 @@ export const MarkerIcon: React.FC<MarkerIconProps> = ({ type, order }) => {
                 style={{ backgroundColor: bg, borderColor: border }}
             >
                 {
-                    type !== "waypoint" ? <Icon className="marker-icon" /> :
+                    type !== "waypoint" ? <Icon /> :
                         <span className="waypoint-number">{order ?? '?'}</span>
                 }
             </div>

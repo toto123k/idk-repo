@@ -5,7 +5,8 @@ from typing import List, Dict, Any, Optional
 
 import requests
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, conlist
+
 from starlette.middleware.cors import CORSMiddleware
 
 # ——— Logging Setup —————————————————————————————————————————————————
@@ -20,16 +21,10 @@ class Coordinate(BaseModel):
     lat: float
 
 
+
 class RouteRequest(BaseModel):
-    coordinates: List[Coordinate] = Field(
-        ...,
-        description="At least start and end point",
-        min_length=2
-    )
-    avoid_zones: List[List[Coordinate]] = Field(
-        default_factory=list,
-        description="Optional list of polygons (each a list of lon/lat) to avoid"
-    )
+    coordinates: conlist(Coordinate, min_items=2)
+    avoid_zones: List[List[Coordinate]] = []
 
 
 class RouteResponse(BaseModel):

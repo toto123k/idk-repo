@@ -9,7 +9,6 @@ import { AttributionControl, ZoomControl } from 'react-leaflet'
 import type { SxProps, Theme } from '@mui/material/styles';
 import { AddWaypointButton } from './components/AddWaypointButton/AddWaypointButton'
 import { RestrictedZonesLayer } from './components/RestrictedZonesLayer/RestrictedZonesLayer'
-import { RestrictedZonesControlPanel } from './components/RestrictedZonesControlPanel/RestrictedZonesControlPanel'
 
 const theme = createTheme({
   palette: {
@@ -57,7 +56,6 @@ export const App = () => {
           topLeftContainerSx
         }>
           <MapLayerControlPanel />
-          <RestrictedZonesControlPanel />
           <AddWaypointButton />
 
         </Box>
