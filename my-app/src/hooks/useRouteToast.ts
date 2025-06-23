@@ -1,4 +1,3 @@
-// hooks/useRouteToast.ts 
 import { toast } from 'react-toastify'
 import { useEffect, useRef } from 'react'
 

@@ -27,7 +27,6 @@ export const AddLayerModal: React.FC<AddLayerModalProps> = ({ open, onClose, onA
     }, [open]);
 
     const handleSave = () => {
-        // The parent component will handle validation and closing the modal
         onAddLayer(name, url);
     };
 
