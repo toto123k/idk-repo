@@ -1,6 +1,5 @@
 import axios from 'axios'
-import type { LocationData } from '../types/types';
-import type { RouteResponse } from '../types';
+import type { LocationData, RouteResponse } from '../types/types';
 import type { LatLngLiteral } from 'leaflet';
 
 interface ApiRouteRequestPayload {

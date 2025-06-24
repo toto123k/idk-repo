@@ -7,3 +7,7 @@ export interface LocationData {
     position: LatLngLiteral
     order?: number
 }
+
+export interface RouteResponse {
+    route: LocationData["position"][]
+}
