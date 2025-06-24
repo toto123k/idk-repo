@@ -36,7 +36,7 @@ export const MarkerIcon: React.FC<MarkerIconProps> = ({ type, order }) => {
 }
 
 
-export function renderMarkerIcon(data: Pick<LocationData, 'type' | 'order'>) {
+export const  renderMarkerIcon = (data: Pick<LocationData, 'type' | 'order'>) => {
     return ReactDOMServer.renderToString(<MarkerIcon type={data.type} order={data.order} />)
 }
 

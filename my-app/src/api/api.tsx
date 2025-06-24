@@ -14,12 +14,6 @@ class ApiService {
         this.baseURL = baseURL
     }
 
-    /**
-     * Fetch route between multiple points, avoiding any restricted polygons.
-     *
-     * @param points An array of [lat, lng] tuples. Must contain at least start & end.
-     * @param avoidZones Optional array of polygons, each polygon is an array of [lat, lng].
-     */
     async fetchRoute(points: LocationData["position"][], avoidZones: LocationData["position"][][] = []
     ): Promise<LocationData["position"][]> {
         if (points.length < 2) {
@@ -28,7 +22,6 @@ class ApiService {
 
         const payload: ApiRouteRequestPayload = {
             coordinates: points,
-            // only include if non-empty
             ...(avoidZones.length > 0 ? { avoid_zones: avoidZones } : {}),
         }
 
@@ -36,23 +29,42 @@ class ApiService {
             const resp = await axios.post<RouteResponse>(
                 `${this.baseURL}/route`,
                 payload,
-                { timeout: 15_000 }
             )
             if (!Array.isArray(resp.data.route)) {
-                throw new Error('Invalid route data from server')
+                throw new Error('Invalid route data received from server.')
             }
             return resp.data.route
         } catch (err) {
             if (axios.isAxiosError(err)) {
+                if (err.code === 'ECONNABORTED') {
+                    throw new Error('The request timed out. The server may be busy, please try again later.');
+                }
+
                 if (err.response) {
-                    const detail = err.response.data?.detail ?? err.response.statusText
-                    throw new Error(`Server ${err.response.status}: ${JSON.stringify(detail)}`)
+                    const status = err.response.status;
+                    const detail = err.response.data?.detail ?? 'An unknown error occurred.';
+
+                    switch (status) {
+                        case 502:
+                            throw new Error(`Routing service error: ${detail}`);
+
+                        case 500:
+                            throw new Error('An unexpected server error occurred. Please contact support if the problem persists.');
+
+                        case 422: // Unprocessable Entity - Validation error from FastAPI
+                            console.error("Validation Error:", err.response.data);
+                            throw new Error('Invalid data sent to the server. This is likely a bug.');
+
+                        default:
+                            throw new Error(`An unexpected error occurred (Status ${status}).`);
+                    }
                 } else if (err.request) {
-                    throw new Error('Network error: could not reach server')
+                    throw new Error('Network error: Could not connect to the server. Please check your internet connection.');
                 }
             }
-            throw err
+            throw err;
         }
     }
 }
+
 export const api = new ApiService();
