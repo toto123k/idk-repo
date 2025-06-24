@@ -1,45 +1,34 @@
-// src/components/CoordinatesModal/CoordinateRows.tsx
+import { type FC, memo } from 'react'
 import { Box, Button } from '@mui/material'
-import { Add as AddIcon } from '@mui/icons-material'
-import { CoordinateRow } from './CoordinateRow' // Import the new component
-
+import AddIcon from '@mui/icons-material/Add'
+import { CoordinateRow } from './CoordinateRow'
 
 interface CoordinateRowsProps {
     rows: { lat: string; lng: string }[]
-    errors: { lat?: string; lng?: string }[]
-    onChange: (idx: number, field: 'lat' | 'lng', value: string) => void
-    onRemove: (idx: number) => void
+    onChange: (index: number, field: 'lat' | 'lng', value: string) => void
+    onRemove: (index: number) => void
     onAdd: () => void
 }
 
-export const CoordinateRows: React.FC<CoordinateRowsProps> = ({
-    rows,
-    errors,
-    onChange,
-    onRemove,
-    onAdd,
-}) => {
-    return (
+export const CoordinateRows: FC<CoordinateRowsProps> = memo(
+    ({ rows, onChange, onRemove, onAdd }) => (
         <>
-            {rows.map((r, idx) => (
+            {rows.map((row, idx) => (
                 <CoordinateRow
                     key={idx}
-                    idx={idx}
-                    lat={r.lat}
-                    lng={r.lng}
-                    errorLat={errors[idx]?.lat}
-                    errorLng={errors[idx]?.lng}
-                    onChange={(field, value) => onChange(idx, field, value)}
-                    onRemove={() => onRemove(idx)}
-                    isRemoveDisabled={rows.length <= 3}
+                    index={idx}
+                    lat={row.lat}
+                    lng={row.lng}
+                    onChange={onChange}
+                    onRemove={onRemove}
+                    disableRemove={rows.length <= 3}
                 />
             ))}
-
-            <Box textAlign="center">
+            <Box textAlign="center" mt={1}>
                 <Button startIcon={<AddIcon />} onClick={onAdd}>
                     Add Coordinate
                 </Button>
             </Box>
         </>
     )
-}
+)

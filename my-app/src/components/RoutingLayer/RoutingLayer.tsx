@@ -1,107 +1,78 @@
-// src/components/RoutingLayer/RoutingLayer.tsx
+import { useAtom, useAtomValue } from 'jotai'
+import { Polyline } from 'react-leaflet'
+import { useRouteToast } from '../../hooks/useRouteToast'
+import type { LatLngLiteral } from 'leaflet'
 
-import React, { useEffect } from 'react';
-import { useAtom, useSetAtom } from 'jotai';
-import { useHydrateAtoms } from 'jotai/utils';
-import { Polyline } from 'react-leaflet';
-
-import { useRouteToast } from '../../hooks/useRouteToast';
-import type { LatLngTuple } from '../../types';
-import { LocationMarker } from '../LocationMarker/LocationMarker';
 import {
-    srcPosAtom,
-    tgtPosAtom,
-    waypointsAtom,
+    sourcePositionAtom,
+    targetPositionAtom,
+    splitWaypointsAtom,
     allPointsAtom,
     routeAtom,
     loadingAtom,
     errorAtom,
-} from '../../state/routingAtoms';
-import { RoutingControlPanel } from './RoutingControlPanel/RoutingControlPanel';
-import './RoutingLayer.css';
+    waypointsAtom,
+} from '../../state/routingAtoms'
 
-interface RoutingLayerProps {
-    initialSource: LatLngTuple;
-    initialTarget: LatLngTuple;
-    initialWaypoints?: LatLngTuple[];
-}
+import { WaypointMarker } from '../WaypointMarker/WaypointMarker'
+import { LocationMarker } from '../LocationMarker/LocationMarker'
+import { RoutingControlPanel } from './RoutingControlPanel/RoutingControlPanel'
+import { useHydrateAtoms } from 'jotai/utils'
+import "./RoutingLayer.css"
 
-export const RoutingLayer: React.FC<RoutingLayerProps> = ({
-    initialSource,
-    initialTarget,
-    initialWaypoints = [],
-}) => {
+export const RoutingLayer: React.FC<{
+    initialSource: LatLngLiteral
+    initialTarget: LatLngLiteral
+    initialWaypoints?: LatLngLiteral[]
+}> = ({ initialSource, initialTarget, initialWaypoints = [] }) => {
     useHydrateAtoms([
-        [srcPosAtom, initialSource],
-        [tgtPosAtom, initialTarget],
+        [sourcePositionAtom, initialSource],
+        [targetPositionAtom, initialTarget],
         [waypointsAtom, initialWaypoints],
-    ]);
+    ])
 
-    const [srcPos, setSrcPos] = useAtom(srcPosAtom);
-    const [tgtPos, setTgtPos] = useAtom(tgtPosAtom);
-    const [waypoints, setWaypoints] = useAtom(waypointsAtom);
-    const [allPoints] = useAtom(allPointsAtom);
-    const [route] = useAtom(routeAtom);
+    const [sourcePosition, setSourcePosition] = useAtom(sourcePositionAtom)
+    const [targetPosition, setTargetPosition] = useAtom(targetPositionAtom)
 
-    const handleWaypointDrag = (
-        index: number,
-        newPosition: LatLngTuple
-    ) => {
-        const newWaypoints = [...waypoints];
-        newWaypoints[index] = newPosition;
-        setWaypoints(newWaypoints);
-    };
+    const waypointAtoms = useAtomValue(splitWaypointsAtom)
+    const allPoints = useAtomValue(allPointsAtom)
+    const route = useAtomValue(routeAtom)
+    const loading = useAtomValue(loadingAtom)
+    const error = useAtomValue(errorAtom)
 
-    const [loading] = useAtom(loadingAtom);
-    const [error] = useAtom(errorAtom);
-    useRouteToast(loading, error);
+    useRouteToast(loading, error)
 
     return (
         <>
             {allPoints.length >= 2 && (
-                <Polyline
-                    positions={allPoints}
-                    className="polyline-outline"
+                <Polyline positions={allPoints} className="polyline-outline" pathOptions={{ weight: 6, color: 'green' }} />
+            )}
 
-                    pathOptions={{
-                        color: 'green',
-                        weight: 6,
-                    }}
+            {sourcePosition && (
+                <LocationMarker
+                    type="source"
+                    position={sourcePosition}
+                    onMarkerEndDrag={pos => setSourcePosition(pos)}
                 />
             )}
 
-            {srcPos && (
-                <LocationMarker
-                    data={{ type: 'source', position: srcPos }}
-                    onMarkerEndDrag={(d) => setSrcPos(d.position)}
-                />
-            )}
-
-            {waypoints.map((pos, index) => (
-                <LocationMarker
-                    key={`waypoint-${index}-${pos[0]}-${pos[1]}`}
-                    data={{ type: 'waypoint', order: index + 1, position: pos }}
-                    onMarkerEndDrag={(d) => handleWaypointDrag(index, d.position)}
-                />
+            {waypointAtoms.map((atom, idx) => (
+                <WaypointMarker key={idx} waypointAtom={atom} order={idx + 1} />
             ))}
 
-            {tgtPos && (
+            {targetPosition && (
                 <LocationMarker
-                    data={{ type: 'target', position: tgtPos }}
-                    onMarkerEndDrag={(d) => setTgtPos(d.position)}
+                    type="target"
+                    position={targetPosition}
+                    onMarkerEndDrag={pos => setTargetPosition(pos)}
                 />
             )}
 
             {route && route.length > 0 && (
-                <Polyline
-                    positions={route.map(([lng, lat]) => [lat, lng] as LatLngTuple)}
-                    className="polyline-outline"
-
-                    pathOptions={{ color: '#FF0000', weight: 5 }}
-                />
+                <Polyline positions={route} className="polyline-outline" pathOptions={{ weight: 5, color: '#FF0000' }} />
             )}
 
             <RoutingControlPanel />
         </>
-    );
-};
+    )
+}

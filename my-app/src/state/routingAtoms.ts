@@ -1,63 +1,48 @@
-// src/state/routeAtoms.ts
 import { atom } from 'jotai'
-import type { LatLngTuple } from '../types'
 import { api } from '../api/api'
-import { restrictedZonesAtom } from './restrictedZonesAtoms'
+import type { LatLngLiteral } from 'leaflet'
+import { splitAtom } from 'jotai/utils'
+import { getUpdatedZonesGeoJSON } from '../components/RestrictedZonesLayer/RestrictedZonesLayer'
+import { extractAvoidZones } from '../utils/geo'
 
-// — source / target / waypoints  
-export const srcPosAtom = atom<LatLngTuple | null>(null)
-export const tgtPosAtom = atom<LatLngTuple | null>(null)
-export const waypointsAtom = atom<LatLngTuple[]>([])
-
-// — loading + error  
+export const sourcePositionAtom = atom<LatLngLiteral>({ lat: 0, lng: 0 })
+export const targetPositionAtom = atom<LatLngLiteral>({ lat: 0, lng: 0 })
+export const routeAtom = atom<LatLngLiteral[] | null>(null)
 export const loadingAtom = atom<boolean>(false)
 export const errorAtom = atom<string | null>(null)
+export const waypointsAtom = atom<LatLngLiteral[]>([])
+export const splitWaypointsAtom = splitAtom(waypointsAtom)
 
-// — aggregate [src, ...waypoints, tgt] into one flat array  
-export const allPointsAtom = atom<LatLngTuple[]>((get) => {
-    const src = get(srcPosAtom)
-    const tgt = get(tgtPosAtom)
-    const wps = get(waypointsAtom)
-    return [src, ...wps, tgt].filter((p): p is LatLngTuple => p !== null)
-})
+export const allPointsAtom = atom<LatLngLiteral[]>((get) => {
+    const src = get(sourcePositionAtom);
+    const tg = get(targetPositionAtom);
+    const waypoints = get(waypointsAtom);
+    return [src, ...waypoints, tg].filter((p): p is LatLngLiteral => p !== null);
+});
 
-// — private storage for the fetched route  
-const _routeDataAtom = atom<LatLngTuple[] | null>(null)
 
-// — public read-only view of the route  
-export const routeAtom = atom((get) => get(_routeDataAtom))
 
-/**
- * Write-only atom: fetches from your backend `/route`,
- * passing in both:
- *  • allPoints: [start, …, end]
- *  • avoidZones: array of polygons to skip
- */
 export const fetchRouteAtom = atom(
     null,
     async (get, set) => {
-        const points = get(allPointsAtom)
-        const zones = get(restrictedZonesAtom)
-
-        // reset if not enough points
-        if (points.length < 2) {
-            set(_routeDataAtom, null)
+        const coords = get(allPointsAtom)
+        if (coords.length < 2) {
+            set(routeAtom, null)
             return
         }
 
-        const avoidZones: LatLngTuple[][] = zones.map(zone =>
-            zone.coordinates.map(c => [c.lat, c.lng] as LatLngTuple)
-        )
+        const geojson = getUpdatedZonesGeoJSON()
+        console.log(geojson)
+        const avoidZones: LatLngLiteral[][] = extractAvoidZones(geojson)
 
         set(loadingAtom, true)
         set(errorAtom, null)
         try {
-            // pass the zones (or [] if none)
-            const route = await api.fetchRoute(points, avoidZones)
-            set(_routeDataAtom, route)
+            const route = await api.fetchRoute(coords, avoidZones)
+            set(routeAtom, route)
         } catch (err: any) {
             set(errorAtom, err.message ?? 'Failed to fetch route')
-            set(_routeDataAtom, null)
+            set(routeAtom, null)
         } finally {
             set(loadingAtom, false)
         }

@@ -14,7 +14,7 @@ interface MarkerIconProps extends Pick<LocationData, 'type'> {
     order?: number
 }
 
-export const MarkerIcon: React.FC<MarkerIconProps> = ({ type, order }) => {
+const MarkerIcon: React.FC<MarkerIconProps> = ({ type, order }) => {
     const { bg, border } = COLORS[type]
     const Icon = type === 'source' ? MyLocation : Flag
 
@@ -26,7 +26,7 @@ export const MarkerIcon: React.FC<MarkerIconProps> = ({ type, order }) => {
                 style={{ backgroundColor: bg, borderColor: border }}
             >
                 {
-                    type !== "waypoint" ? <Icon className="marker-icon" /> :
+                    type !== "waypoint" ? <Icon /> :
                         <span className="waypoint-number">{order ?? '?'}</span>
                 }
             </div>
@@ -36,7 +36,7 @@ export const MarkerIcon: React.FC<MarkerIconProps> = ({ type, order }) => {
 }
 
 
-export function renderMarkerIcon(data: Pick<LocationData, 'type' | 'order'>) {
+export const renderMarkerIcon = (data: Pick<LocationData, 'type' | 'order'>) => {
     return ReactDOMServer.renderToString(<MarkerIcon type={data.type} order={data.order} />)
 }
 
