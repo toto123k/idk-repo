@@ -1,12 +1,15 @@
-import { atom, useAtomValue } from 'jotai'
+import { atom } from 'jotai'
 import { api } from '../api/api'
 import type { LatLngLiteral } from 'leaflet'
 import { splitAtom } from 'jotai/utils'
 import { extractAvoidZones } from '../utils/geo'
 import { drawnZonesGeoJsonAtom } from './drawingItemsAtom'
 
-export const sourcePositionAtom = atom<LatLngLiteral>({ lat: 0, lng: 0 })
-export const targetPositionAtom = atom<LatLngLiteral>({ lat: 0, lng: 0 })
+export const sourcePositionAtom = atom<LatLngLiteral>(initialSource)
+export const targetPositionAtom = atom<LatLngLiteral>(initialTarget)
+import { initialSource, initialTarget } from '../constants/initalLocations'
+
+
 export const routeAtom = atom<LatLngLiteral[] | null>(null)
 export const loadingAtom = atom<boolean>(false)
 export const errorAtom = atom<string | null>(null)
