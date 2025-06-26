@@ -1,8 +1,6 @@
 import { useAtom, useAtomValue } from 'jotai'
 import { Polyline } from 'react-leaflet'
 import { useRouteToast } from '../../hooks/useRouteToast'
-import type { LatLngLiteral } from 'leaflet'
-
 import {
     sourcePositionAtom,
     targetPositionAtom,
@@ -11,25 +9,15 @@ import {
     routeAtom,
     loadingAtom,
     errorAtom,
-    waypointsAtom,
 } from '../../state/routingAtoms'
 
 import { WaypointMarker } from '../WaypointMarker/WaypointMarker'
 import { LocationMarker } from '../LocationMarker/LocationMarker'
 import { RoutingControlPanel } from './RoutingControlPanel/RoutingControlPanel'
-import { useHydrateAtoms } from 'jotai/utils'
 import "./RoutingLayer.css"
 
-export const RoutingLayer: React.FC<{
-    initialSource: LatLngLiteral
-    initialTarget: LatLngLiteral
-    initialWaypoints?: LatLngLiteral[]
-}> = ({ initialSource, initialTarget, initialWaypoints = [] }) => {
-    useHydrateAtoms([
-        [sourcePositionAtom, initialSource],
-        [targetPositionAtom, initialTarget],
-        [waypointsAtom, initialWaypoints],
-    ])
+
+export const RoutingLayer = () => {
 
     const [sourcePosition, setSourcePosition] = useAtom(sourcePositionAtom)
     const [targetPosition, setTargetPosition] = useAtom(targetPositionAtom)
