@@ -1,4 +1,3 @@
-// components/LocationMarker/LocationMarker.tsx
 import { Marker, Popup } from 'react-leaflet'
 import { useRef, useState, useCallback } from 'react'
 import type { LocationData } from '../../types/types'
@@ -9,22 +8,21 @@ interface Props extends LocationData {
     onMarkerEndDrag?: (updated: LocationData["position"]) => void
 }
 
-
-
 export const LocationMarker: React.FC<Props> = ({
     type,
     position,
+    order,
     onMarkerEndDrag,
 }) => {
     const markerRef = useRef<L.Marker>(null)
     const [currentPosition, setCurrentPosition] = useState<LocationData["position"]>(position)
 
     const onDragEnd = useCallback(() => {
-        const pos = markerRef.current?.getLatLng()
-        if (pos) {
+        const newPosition = markerRef.current?.getLatLng()
+        if (newPosition) {
             setCurrentPosition(() => {
-                onMarkerEndDrag?.(pos)
-                return pos
+                onMarkerEndDrag?.(newPosition)
+                return newPosition
             })
         }
     }, [onMarkerEndDrag])
@@ -32,13 +30,23 @@ export const LocationMarker: React.FC<Props> = ({
     return (
         <Marker
             position={position}
-            icon={createDivIcon(type)}
+            icon={createDivIcon({ type, order })}
             draggable={true}
-            ref={markerRef}
+            ref={(marker) => {
+                if (marker) {
+                    markerRef.current = marker
+
+                    marker.once('add', () => {
+                        const element = marker.getElement()
+                        if (element) element.setAttribute('data-testid', `location-marker-${type}${type === "waypoint" ? "-" + order : ""}`)
+                    })
+                }
+            }}
             eventHandlers={{ dragend: onDragEnd }}
+
         >
             <Popup>
-                <LocationDetailsPopup position={currentPosition} type={type} />
+                <LocationDetailsPopup position={currentPosition} type={type} order={order} />
             </Popup>
         </Marker>
     )
