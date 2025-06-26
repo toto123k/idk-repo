@@ -1,52 +1,64 @@
+import React, { useRef, useState, useCallback, useEffect } from 'react'
 import { Marker, Popup } from 'react-leaflet'
-import { useRef, useState, useCallback } from 'react'
+import type { LatLngLiteral } from 'leaflet'
 import type { LocationData } from '../../types/types'
 import { LocationDetailsPopup } from '../LocationDetailsPopup/LocationDetailsPopup'
 import { createDivIcon } from '../../utils/createDivIcon'
 
 interface Props extends LocationData {
-    onMarkerEndDrag?: (updated: LocationData["position"]) => void
+    onMarkerEndDrag?: (pos: LocationData['position']) => void
 }
 
 export const LocationMarker: React.FC<Props> = ({
-    type,
-    position,
-    order,
-    onMarkerEndDrag,
+    type, position, order, onMarkerEndDrag
 }) => {
     const markerRef = useRef<L.Marker>(null)
-    const [currentPosition, setCurrentPosition] = useState<LocationData["position"]>(position)
+    const [currentPosition, setCurrentPosition] = useState(position)
 
-    const onDragEnd = useCallback(() => {
-        const newPosition = markerRef.current?.getLatLng()
-        if (newPosition) {
-            setCurrentPosition(() => {
-                onMarkerEndDrag?.(newPosition)
-                return newPosition
-            })
+    useEffect(() => {
+        setCurrentPosition(position)
+    }, [position])
+
+    const handleDragEnd = useCallback(() => {
+        const newPos = markerRef.current?.getLatLng()
+        if (newPos) {
+            setCurrentPosition(newPos)
+            onMarkerEndDrag?.(newPos)
         }
     }, [onMarkerEndDrag])
 
+    const handlePositionUpdate = (newPos: LatLngLiteral) => {
+        setCurrentPosition(newPos)
+        markerRef.current?.setLatLng(newPos)
+        onMarkerEndDrag?.(newPos)
+    }
+
     return (
         <Marker
-            position={position}
+            position={currentPosition}
+            draggable
             icon={createDivIcon({ type, order })}
-            draggable={true}
-            ref={(marker) => {
-                if (marker) {
-                    markerRef.current = marker
-
-                    marker.once('add', () => {
-                        const element = marker.getElement()
-                        if (element) element.setAttribute('data-testid', `location-marker-${type}${type === "waypoint" ? "-" + order : ""}`)
+            ref={m => {
+                if (m) {
+                    markerRef.current = m
+                    m.once('add', () => {
+                        const el = m.getElement()
+                        if (el) el.setAttribute(
+                            'data-testid',
+                            `location-marker-${type}${type === 'waypoint' ? '-' + order : ''}`
+                        )
                     })
                 }
             }}
-            eventHandlers={{ dragend: onDragEnd }}
-
+            eventHandlers={{ dragend: handleDragEnd }}
         >
             <Popup>
-                <LocationDetailsPopup position={currentPosition} type={type} order={order} />
+                <LocationDetailsPopup
+                    position={currentPosition}
+                    type={type}
+                    order={order}
+                    onPositionUpdate={handlePositionUpdate}
+                />
             </Popup>
         </Marker>
     )

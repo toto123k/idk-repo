@@ -1,4 +1,3 @@
-// src/components/RestrictedZonesLayer/RestrictedZonesLayer.tsx
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useMap } from 'react-leaflet';
 import * as L from 'leaflet';

@@ -1,4 +1,3 @@
-// src/state/mapState.ts
 import { atom, createStore } from 'jotai';
 import * as L from 'leaflet';
 import type { FeatureGroup } from 'leaflet';
