@@ -1,3 +1,4 @@
+// src/components/RestrictedZonesLayer/RestrictedZonesLayer.tsx
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useMap } from 'react-leaflet';
 import * as L from 'leaflet';
@@ -6,9 +7,11 @@ import '@geoman-io/leaflet-geoman-free/dist/leaflet-geoman.css';
 import { type FC } from 'react';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Stack, Typography } from '@mui/material';
 import { CoordinatesModal } from '../CoordinatesModal/CoordinatesModal';
-import { FeatureGroup, type LatLngLiteral } from 'leaflet';
-import { drawnItemsAtom } from '../../state/drawingItemsAtom';
+import { type FeatureGroup, type LatLngLiteral } from 'leaflet';
+
 import { useAtom } from 'jotai';
+import { drawnItemsAtom } from '../../state/drawingItemsAtom';
+
 interface InputTypeSelectionDialogProps {
     open: boolean;
     onClose: () => void;
@@ -45,12 +48,10 @@ export const InputTypeSelectionDialog: FC<InputTypeSelectionDialogProps> = ({
     );
 };
 
-
 export const RestrictedZonesLayer = () => {
     const map = useMap();
-    const drawnRef = useRef<FeatureGroup>(new FeatureGroup());
-    const customControlAddedRef = useRef(false); // To prevent adding the control multiple times. [4]
-    const [drawnItems, setDrawnItems] = useAtom(drawnItemsAtom);
+    const [drawnItems] = useAtom(drawnItemsAtom);
+    const customControlAddedRef = useRef(false);
 
     const [isInputTypeModalOpen, setInputTypeModalOpen] = useState(false);
     const [isCoordinatesModalOpen, setCoordinatesModalOpen] = useState(false);
@@ -100,9 +101,7 @@ export const RestrictedZonesLayer = () => {
         if (!map?.pm) return;
 
         L.PM.setOptIn(true);
-        const drawnItems = drawnRef.current;
         map.addLayer(drawnItems);
-        setDrawnItems(drawnItems);
 
         if (!customControlAddedRef.current && map.pm.Toolbar) {
             map.pm.Toolbar.createCustomControl({
@@ -132,8 +131,6 @@ export const RestrictedZonesLayer = () => {
             rotateMode: true,
         });
 
-
-
         const handlePmCreate = (e: any) => {
             const layer = e.layer;
             layer.options.pmIgnore = false;
@@ -150,8 +147,7 @@ export const RestrictedZonesLayer = () => {
         map.on('pm:create', handlePmCreate);
         map.on('pm:remove', handlePmRemove);
 
-
-    }, [map, openInputTypeModal]);
+    }, [map, openInputTypeModal, drawnItems]);
 
     return (
         <>
