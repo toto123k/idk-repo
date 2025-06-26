@@ -93,7 +93,7 @@ export const LocationDetailsPopup = ({ position, type, order }: Props) => {
                     </Stack>
                     <Stack direction="row" justifyContent="space-between">
                         <Typography sx={labelSx} variant="body2">UTM:</Typography>
-                        <Typography sx={valueSx} variant="body2">
+                        <Typography className='location-popup-utm' sx={valueSx} variant="body2">
                             {`${zoneNum}${zoneLetter} ${easting.toFixed(0)} ${northing.toFixed(0)}`}
                         </Typography>
                     </Stack>

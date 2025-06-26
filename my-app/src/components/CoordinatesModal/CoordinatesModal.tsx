@@ -64,10 +64,19 @@ export const CoordinatesModal: FC<CoordinatesModalProps> = ({ open, onClose, onS
                 />
             </DialogContent>
             <DialogActions>
-                <Button startIcon={<CancelIcon />} onClick={onClose}>
+                <Button
+                    id="coordinates-cancel-button"
+                    startIcon={<CancelIcon />}
+                    onClick={onClose}
+                >
                     Cancel
                 </Button>
-                <Button variant="contained" onClick={handleCreate} disabled={!isValid}>
+                <Button
+                    id="coordinates-create-button"
+                    variant="contained"
+                    onClick={handleCreate}
+                    disabled={!isValid}
+                >
                     Create
                 </Button>
             </DialogActions>

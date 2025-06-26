@@ -47,6 +47,8 @@ export const CoordinateRow: FC<CoordinateRowProps> = memo(
         return (
             <Box display="flex" alignItems="center" mb={1}>
                 <TextField
+                    id={`coordinate-lat-${index}`}
+
                     label="Latitude"
                     value={lat}
                     onChange={handleLatChange}
@@ -56,6 +58,7 @@ export const CoordinateRow: FC<CoordinateRowProps> = memo(
                 />
                 <Box mx={1} />
                 <TextField
+                    id={`coordinate-lng-${index}`}
                     label="Longitude"
                     value={lng}
                     onChange={handleLngChange}

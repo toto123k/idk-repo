@@ -25,7 +25,8 @@ export const CoordinateRows: FC<CoordinateRowsProps> = memo(
                 />
             ))}
             <Box textAlign="center" mt={1}>
-                <Button startIcon={<AddIcon />} onClick={onAdd}>
+                <Button id="add-coordinate-button"
+                    startIcon={<AddIcon />} onClick={onAdd}>
                     Add Coordinate
                 </Button>
             </Box>

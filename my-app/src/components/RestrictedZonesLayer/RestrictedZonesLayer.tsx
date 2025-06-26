@@ -7,6 +7,7 @@ import { type FC } from 'react';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Stack, Typography } from '@mui/material';
 import { CoordinatesModal } from '../CoordinatesModal/CoordinatesModal';
 import { FeatureGroup, type LatLngLiteral } from 'leaflet';
+
 interface InputTypeSelectionDialogProps {
     open: boolean;
     onClose: () => void;
@@ -28,10 +29,10 @@ export const InputTypeSelectionDialog: FC<InputTypeSelectionDialogProps> = ({
                     How would you like to define the zone?
                 </Typography>
                 <Stack spacing={2} mt={2}>
-                    <Button variant="outlined" onClick={() => { onDrawOnMap(); onClose(); }}>
+                    <Button id="draw-on-map-button" variant="outlined" onClick={() => { onDrawOnMap(); onClose(); }}>
                         Draw on Map
                     </Button>
-                    <Button variant="outlined" onClick={() => { onEnterCoordinates(); onClose(); }}>
+                    <Button id="enter-coordinates-button" variant="outlined" onClick={() => { onEnterCoordinates(); onClose(); }}>
                         Enter Coordinates Manually
                     </Button>
                 </Stack>
@@ -143,6 +144,13 @@ export const RestrictedZonesLayer = () => {
             layer.options.pmIgnore = false;
             L.PM.reInitLayer(layer);
             drawnItems.addLayer(layer);
+
+            const index = drawnItems.getLayers().length - 1;
+
+            const svgElement = (layer as any)._path as SVGPathElement;
+            if (svgElement) {
+                svgElement.setAttribute('data-test-id', `poly-${index}`);
+            }
         };
 
         const handlePmRemove = (e: any) => {

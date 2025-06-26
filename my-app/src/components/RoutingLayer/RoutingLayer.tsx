@@ -45,7 +45,7 @@ export const RoutingLayer: React.FC<{
     return (
         <>
             {allPoints.length >= 2 && (
-                <Polyline positions={allPoints} className="polyline-outline" pathOptions={{ weight: 6, color: 'green' }} />
+                <Polyline positions={allPoints} className="polyline-outline waypoints-polyline" pathOptions={{ weight: 6, color: 'green' }} />
             )}
 
             {sourcePosition && (
@@ -69,7 +69,7 @@ export const RoutingLayer: React.FC<{
             )}
 
             {route && route.length > 0 && (
-                <Polyline positions={route} className="polyline-outline" pathOptions={{ weight: 5, color: '#FF0000' }} />
+                <Polyline positions={route} className="polyline-outline route-polyline" pathOptions={{ weight: 5, color: '#FF0000' }} />
             )}
 
             <RoutingControlPanel />

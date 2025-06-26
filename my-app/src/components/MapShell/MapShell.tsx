@@ -21,6 +21,8 @@ export const MapShell: React.FC<MapShellProps> = ({ center, zoom, children }) =>
             zoom={zoom}
             style={{ height: '100vh', width: '100%' }}
             zoomControl={false}
+            id={selectedLayer.id}
+            key={selectedLayer.id}
         >
             <TileLayer
                 key={selectedLayer.id}

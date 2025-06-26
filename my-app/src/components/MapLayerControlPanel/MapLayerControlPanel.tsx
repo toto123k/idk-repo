@@ -125,6 +125,7 @@ export const MapLayerControlPanel: React.FC = () => {
 
                         <IconButton
                             size="small"
+                            id='open-map-layer-dialog-button'
                             onClick={() => setModalOpen(true)}
                             aria-label="Add new layer"
                             sx={iconButtonSx}
