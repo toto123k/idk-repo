@@ -24,7 +24,6 @@ export const MapShell: React.FC<MapShellProps> = ({ center, zoom, children }) =>
         >
             <TileLayer
                 key={selectedLayer.id}
-                attribution={selectedLayer.attribution}
                 url={selectedLayer.url}
             />
             {children}

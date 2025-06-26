@@ -7,11 +7,17 @@ import './MarkerIcon.css'
 const COLORS = {
     source: { bg: '#1976d2', border: '#1565c0' },
     target: { bg: '#d32f2f', border: '#c62828' },
+    waypoint: { bg: '#fbc02d', border: '#f57f17' }
 }
 
-export const MarkerIcon: React.FC<Pick<LocationData, 'type'>> = ({ type }) => {
+interface MarkerIconProps extends Pick<LocationData, 'type'> {
+    order?: number
+}
+
+const MarkerIcon: React.FC<MarkerIconProps> = ({ type, order }) => {
     const { bg, border } = COLORS[type]
     const Icon = type === 'source' ? MyLocation : Flag
+
 
     return (
         <div className="marker-container">
@@ -19,13 +25,18 @@ export const MarkerIcon: React.FC<Pick<LocationData, 'type'>> = ({ type }) => {
                 className="marker-icon-wrapper"
                 style={{ backgroundColor: bg, borderColor: border }}
             >
-                <Icon className="marker-icon" />
+                {
+                    type !== "waypoint" ? <Icon /> :
+                        <span className="waypoint-number">{order ?? '?'}</span>
+                }
             </div>
-            <span className="marker-label">{type}</span>
+            {type !== 'waypoint' && <span className="marker-label">{type}</span>}
         </div>
     )
 }
 
-export function renderMarkerIcon(data: Pick<LocationData, 'type'>) {
-    return ReactDOMServer.renderToString(<MarkerIcon type={data.type} />)
+
+export const renderMarkerIcon = (data: Pick<LocationData, 'type' | 'order'>) => {
+    return ReactDOMServer.renderToString(<MarkerIcon type={data.type} order={data.order} />)
 }
+

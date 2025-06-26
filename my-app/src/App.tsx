@@ -1,10 +1,13 @@
 import { useMemo } from 'react'
 import { ToastContainer } from 'react-toastify'
-import { ThemeProvider, createTheme, CssBaseline } from '@mui/material'
+import { ThemeProvider, createTheme, CssBaseline, Box } from '@mui/material'
 import { MapShell } from './components/MapShell/MapShell'
 import { RoutingLayer } from './components/RoutingLayer/RoutingLayer'
 import { MapLayerControlPanel } from './components/MapLayerControlPanel/MapLayerControlPanel'
 import { AttributionControl, ZoomControl } from 'react-leaflet'
+import type { SxProps, Theme } from '@mui/material/styles';
+import { AddWaypointButton } from './components/AddWaypointButton/AddWaypointButton'
+import { RestrictedZonesLayer } from './components/RestrictedZonesLayer/RestrictedZonesLayer'
 import type { LocationData } from './types/types'
 
 const theme = createTheme({
@@ -27,6 +30,16 @@ export const App = () => {
     []
   )
 
+  const topLeftContainerSx: SxProps<Theme> = {
+    position: 'absolute',
+    top: (theme) => theme.spacing(2),
+    left: (theme) => theme.spacing(2),
+    zIndex: (theme) => theme.zIndex.tooltip,
+    display: "flex",
+    flexDirection: "column",
+    gap: 1
+  }
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -40,7 +53,14 @@ export const App = () => {
 
       <MapShell center={center} zoom={9}>
         <RoutingLayer initialSource={source} initialTarget={target} />
-        <MapLayerControlPanel />
+        <RestrictedZonesLayer />
+        <Box sx={
+          topLeftContainerSx
+        }>
+          <MapLayerControlPanel />
+          <AddWaypointButton />
+
+        </Box>
         <AttributionControl position="topright" />
         <ZoomControl position='bottomleft' />
 

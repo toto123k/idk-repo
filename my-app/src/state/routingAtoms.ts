@@ -1,26 +1,51 @@
-import { atom } from 'jotai'
+import { atom, useAtomValue } from 'jotai'
 import { api } from '../api/api'
 import type { LatLngLiteral } from 'leaflet'
+import { splitAtom } from 'jotai/utils'
+import { extractAvoidZones } from '../utils/geo'
+import { drawnZonesGeoJsonAtom } from './drawingItemsAtom'
 
-export const srcPosAtom = atom<LatLngLiteral>({ lat: 0, lng: 0 })
-export const tgtPosAtom = atom<LatLngLiteral>({ lat: 0, lng: 0 })
+export const sourcePositionAtom = atom<LatLngLiteral>({ lat: 0, lng: 0 })
+export const targetPositionAtom = atom<LatLngLiteral>({ lat: 0, lng: 0 })
 export const routeAtom = atom<LatLngLiteral[] | null>(null)
 export const loadingAtom = atom<boolean>(false)
 export const errorAtom = atom<string | null>(null)
+export const waypointsAtom = atom<LatLngLiteral[]>([])
+export const splitWaypointsAtom = splitAtom(waypointsAtom)
 
-export const fetchRouteAtom = atom(
+export const allPointsAtom = atom<LatLngLiteral[]>((get) => {
+    const src = get(sourcePositionAtom);
+    const tg = get(targetPositionAtom);
+    const waypoints = get(waypointsAtom);
+    return [src, ...waypoints, tg].filter((p): p is LatLngLiteral => p !== null);
+});
+
+
+type FetchOptionsExample = { maxLength: number }
+
+// reads null, args is FetchOptions, returns void
+export const fetchRouteAtom = atom<null, [FetchOptionsExample], void>(
     null,
-    async (get, set) => {
+    async (get, set, { maxLength }) => {
+        console.log(maxLength)
+        const coords = get(allPointsAtom)
+        if (coords.length < 2) {
+            set(routeAtom, null)
+            return
+        }
+
+        const geojson = get(drawnZonesGeoJsonAtom)
+        console.log(geojson)
+        const avoidZones: LatLngLiteral[][] = extractAvoidZones(geojson)
+
         set(loadingAtom, true)
         set(errorAtom, null)
-        set(routeAtom, null)
         try {
-            const src = get(srcPosAtom)
-            const tgt = get(tgtPosAtom)
-            const data = await api.fetchRoute(src, tgt)
-            set(routeAtom, data)
-        } catch (err) {
-            set(errorAtom, err instanceof Error ? err.message : 'An unknown error occurred')
+            const route = await api.fetchRoute(coords, avoidZones)
+            set(routeAtom, route)
+        } catch (err: any) {
+            set(errorAtom, err.message ?? 'Failed to fetch route')
+            set(routeAtom, null)
         } finally {
             set(loadingAtom, false)
         }

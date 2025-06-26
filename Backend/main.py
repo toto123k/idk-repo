@@ -1,56 +1,32 @@
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-from typing import List
-import requests
-import openrouteservice
+import logging
+from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
+from endpoints.RoutingEndpoint import router
+from exceptions.Exceptions import register_exception_handlers
 
-class Coordinate(BaseModel):
-    lon: float
-    lat: float
+logging.basicConfig(level=logging.INFO)
 
-class Position(BaseModel):
-    lat: float
-    lng: float
+app = FastAPI(
+    title="Routing API",
+    description="Get driving routes with optional avoid zones"
+)
 
-class RouteRequest(BaseModel):
-    start: Coordinate
-    end: Coordinate
-
-class RouteResponse(BaseModel):
-    route: List[Position]
-
-app = FastAPI(title="Routing API", description="Get driving routes from OpenRouteService.", version="1.0.0")
-
-ORS_TOKEN = "5b3ce3597851110001cf6248d28a72ed53124d669dc1147811ae5ebe"
-ORS_URL = "https://api.openrouteservice.org/v2"
+register_exception_handlers(app)
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-@app.post("/route", response_model=RouteResponse)
-def create_route(request_data: RouteRequest):
-    start = [request_data.start.lon, request_data.start.lat]
-    end   = [request_data.end.lon,   request_data.end.lat]
-    headers = {"Authorization": ORS_TOKEN, "Content-Type": "application/json"}
-    payload = {"coordinates": [start, end]}
+app.include_router(router)
 
-    try:
-        resp = requests.post(f"{ORS_URL}/directions/driving-car", json=payload, headers=headers)
-        resp.raise_for_status()
-    except requests.RequestException as e:
-        raise HTTPException(status_code=503, detail=f"ORS connection failed: {e}")
-
-    try:
-        data    = resp.json()
-        geom    = data["routes"][0]["geometry"]
-        decoded = openrouteservice.convert.decode_polyline(geom)["coordinates"]
-        formatted = [{"lat": lat, "lng": lon} for lon, lat in decoded]
-        return {"route": formatted}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"ORS response parse error: {e}")
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(
+        "main:app",
+        host="0.0.0.0",
+        port=8000,
+        reload=True,
+    )
