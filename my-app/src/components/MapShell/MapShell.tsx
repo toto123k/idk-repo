@@ -1,7 +1,8 @@
-import { MapContainer, TileLayer, ZoomControl } from 'react-leaflet';
+import { MapContainer, TileLayer } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import { AttributionControl } from 'react-leaflet';
 import type { LatLngLiteral } from 'leaflet';
+import { useAtomValue } from 'jotai';
+import { selectedMapLayerAtom } from '../../state/mapAtoms';
 
 interface MapShellProps {
     center: LatLngLiteral;
@@ -10,6 +11,8 @@ interface MapShellProps {
 }
 
 export const MapShell: React.FC<MapShellProps> = ({ center, zoom, children }) => {
+    const selectedLayer = useAtomValue(selectedMapLayerAtom);
+
     return (
         <MapContainer
             attributionControl={false}
@@ -20,11 +23,9 @@ export const MapShell: React.FC<MapShellProps> = ({ center, zoom, children }) =>
             zoomControl={false}
         >
             <TileLayer
-
-                url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+                key={selectedLayer.id}
+                url={selectedLayer.url}
             />
-            <AttributionControl position="topright" />
-            <ZoomControl position='topright' />
             {children}
         </MapContainer>
     );

@@ -9,7 +9,7 @@ export const FetchRouteButton: React.FC = () => {
     return (
         <Button
             variant="contained"
-            onClick={() => fetchRoute()}
+            onClick={() => fetchRoute({ maxLength: 2 })}
             disabled={loading}
             startIcon={loading ? <CircularProgress size={20} color="inherit" /> : null}
         >
