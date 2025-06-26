@@ -1,5 +1,6 @@
-from typing import List
-from pydantic import BaseModel, conlist
+from pydantic import BaseModel, conlist, model_validator
+from typing import Any, Dict, List
+
 
 class Coordinate(BaseModel):
     lat: float
@@ -23,3 +24,12 @@ class RouteRequest(BaseModel):
 
 class RouteResponse(BaseModel):
     route: List[Coordinate]
+
+    @model_validator(mode='before')
+    def extract_route_from_ors(cls, raw: Dict[str, Any]) -> Dict[str, Any]:
+        try:
+            coords = raw["features"][0]["geometry"]["coordinates"]
+        except (KeyError, IndexError, TypeError):
+            raise ValueError("Unexpected ORS response format")
+        transformed = [Coordinate(lat=lat, lng=lng) for lng, lat in coords]
+        return {"route": transformed}
