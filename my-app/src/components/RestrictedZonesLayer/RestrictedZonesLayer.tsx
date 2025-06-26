@@ -1,121 +1,183 @@
-import { useEffect, useRef, useCallback } from 'react';
-import { FeatureGroup } from 'react-leaflet';
-import { useAtom, useSetAtom } from 'jotai';
-import L from 'leaflet';
-import 'leaflet-draw/dist/leaflet.draw.css';
+import { useEffect, useRef, useState, useCallback } from 'react';
+import { useMap } from 'react-leaflet';
+import * as L from 'leaflet';
+import '@geoman-io/leaflet-geoman-free';
+import '@geoman-io/leaflet-geoman-free/dist/leaflet-geoman.css';
+import { type FC } from 'react';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Stack, Typography } from '@mui/material';
+import { CoordinatesModal } from '../CoordinatesModal/CoordinatesModal';
+import { FeatureGroup, type LatLngLiteral } from 'leaflet';
 
-import {
-    restrictedZonesAtom,
-    drawingModeAtom,
-    selectedZoneIdAtom,
-    drawHandlersAtom,
-    type RestrictedZone,
-    type DrawingMode,
-} from '../../state/restrictedZonesAtoms';
-import { toast } from 'react-toastify';
+interface InputTypeSelectionDialogProps {
+    open: boolean;
+    onClose: () => void;
+    onDrawOnMap: () => void;
+    onEnterCoordinates: () => void;
+}
 
-import { hideLeafletDrawToolbar } from '../../utils/leafletDrawUtils';
-import { useRenderRestrictedZones } from '../../hooks/useRenderRestrictedZones';
-import { useLeafletDrawControl } from '../../hooks/useLeafletControl';
+export const InputTypeSelectionDialog: FC<InputTypeSelectionDialogProps> = ({
+    open,
+    onClose,
+    onDrawOnMap,
+    onEnterCoordinates,
+}) => {
+    return (
+        <Dialog open={open} onClose={onClose} fullWidth maxWidth="xs">
+            <DialogTitle>Add New Zone</DialogTitle>
+            <DialogContent>
+                <Typography variant="body1" gutterBottom>
+                    How would you like to define the zone?
+                </Typography>
+                <Stack spacing={2} mt={2}>
+                    <Button id="draw-on-map-button" variant="outlined" onClick={() => { onDrawOnMap(); onClose(); }}>
+                        Draw on Map
+                    </Button>
+                    <Button id="enter-coordinates-button" variant="outlined" onClick={() => { onEnterCoordinates(); onClose(); }}>
+                        Enter Coordinates Manually
+                    </Button>
+                </Stack>
+            </DialogContent>
+            <DialogActions>
+                <Button onClick={onClose}>Cancel</Button>
+            </DialogActions>
+        </Dialog>
+    );
+};
+
+let _drawnItems: FeatureGroup | null = null;
+
+
+export function getUpdatedZonesGeoJSON(): GeoJSON.FeatureCollection {
+    if (!_drawnItems) return { type: 'FeatureCollection', features: [] };
+    return _drawnItems.toGeoJSON() as GeoJSON.FeatureCollection;
+}
 
 export const RestrictedZonesLayer = () => {
-    const [zones, setZones] = useAtom(restrictedZonesAtom);
-    const [drawingMode, setDrawingMode] = useAtom(drawingModeAtom);
-    const [selectedZoneId, setSelectedZoneId] = useAtom(selectedZoneIdAtom);
-    const setDrawHandlers = useSetAtom(drawHandlersAtom);
+    const map = useMap();
+    const drawnRef = useRef<FeatureGroup>(new FeatureGroup());
+    const customControlAddedRef = useRef(false); // To prevent adding the control multiple times. [4]
 
-    const featureGroupRef = useRef<L.FeatureGroup>(null!);
+    const [isInputTypeModalOpen, setInputTypeModalOpen] = useState(false);
+    const [isCoordinatesModalOpen, setCoordinatesModalOpen] = useState(false);
 
-    useEffect(() => {
-        hideLeafletDrawToolbar();
+    const openInputTypeModal = useCallback(() => {
+        setInputTypeModalOpen(true);
     }, []);
 
-    // 2. Callbacks for Leaflet.Draw events (managed by useLeafletDrawControl)
-    const handleZoneCreated = useCallback((layer: L.Polygon) => {
-        const coords = (layer.getLatLngs()[0] as L.LatLng[]).map(p => ({ lat: p.lat, lng: p.lng }));
-        setZones(prevZones => {
-            const newZone: RestrictedZone = {
-                id: `zone-${Date.now()}`,
-                name: `Zone ${prevZones.length + 1}`,
-                coordinates: coords,
-                color: '#ff0000',
-                fillColor: '#ff0000',
-                fillOpacity: 0.2,
-            };
-            return [...prevZones, newZone];
-        });
-        setDrawingMode('idle');
-        toast.success('Restricted zone created');
-    }, [setZones, setDrawingMode]);
-
-    const handleZoneEdited = useCallback((editedLayers: L.LayerGroup) => {
-        let updatedCount = 0;
-        editedLayers.eachLayer(layer => {
-            const polygonLayer = layer as L.Polygon;
-            const zoneId = polygonLayer.options.zoneId;
-
-            if (zoneId) {
-                const newCoords = (polygonLayer.getLatLngs()[0] as L.LatLng[]).map(p => ({ lat: p.lat, lng: p.lng }));
-                setZones(prevZones =>
-                    prevZones.map(z => (z.id === zoneId ? { ...z, coordinates: newCoords } : z))
-                );
-                updatedCount++;
-            } else {
-                console.warn('Edited layer is missing zoneId from options:', layer);
-            }
-        });
-        if (updatedCount > 0) {
-            toast.success(`${updatedCount} zone(s) updated`);
+    const handleDrawOnMap = () => {
+        if (map?.pm) {
+            map.pm.enableDraw('Polygon', {
+                snappable: true,
+                snapDistance: 20,
+            });
         }
-        setDrawingMode('idle');
-    }, [setZones, setDrawingMode]);
+    };
 
-    const handleZoneDeleted = useCallback((deletedLayers: L.LayerGroup) => {
-        const removedIds: string[] = [];
-        deletedLayers.eachLayer(layer => {
-            const zoneId = (layer as L.Polygon).options.zoneId;
-            if (zoneId) {
-                removedIds.push(zoneId);
-            } else {
-                console.warn('Deleted layer is missing zoneId from options:', layer);
-            }
-        });
+    const handleEnterCoordinates = () => {
+        setCoordinatesModalOpen(true);
+    };
 
-        if (removedIds.length === 0) {
-            setDrawingMode('idle');
+    const handleCoordinatesSubmit = (coords: LatLngLiteral[]) => {
+        if (!map || !_drawnItems) {
+            setCoordinatesModalOpen(false);
             return;
         }
 
-        setZones(prevZones => prevZones.filter(z => !removedIds.includes(z.id)));
-
-        if (selectedZoneId && removedIds.includes(selectedZoneId)) {
-            setSelectedZoneId(null);
+        if (coords.length < 3) {
+            console.warn("Not enough coordinates to form a polygon.");
+            setCoordinatesModalOpen(false);
+            return;
         }
 
-        toast.success(`${removedIds.length} zone(s) deleted`);
-        setDrawingMode('idle');
-    }, [setZones, setDrawingMode, selectedZoneId, setSelectedZoneId]);
+        const polygon = L.polygon(coords);
 
-    useLeafletDrawControl({
-        featureGroupRef,
-        onZoneCreated: handleZoneCreated,
-        onZoneEdited: handleZoneEdited,
-        onZoneDeleted: handleZoneDeleted,
-        setDrawHandlersAtom: setDrawHandlers,
-        drawingMode: drawingMode as DrawingMode,
-    });
+        polygon.options.pmIgnore = false;
+        L.PM.reInitLayer(polygon);
 
-    const handleZoneClick = useCallback((zoneId: string) => {
-        setSelectedZoneId(prevId => (zoneId === prevId ? null : zoneId));
-    }, [setSelectedZoneId]);
+        _drawnItems.addLayer(polygon);
 
-    useRenderRestrictedZones({
-        featureGroupRef,
-        zones,
-        selectedZoneId,
-        drawingMode: drawingMode as DrawingMode,
-        onZoneClick: handleZoneClick,
-    });
+        map.fire('pm:create', { layer: polygon, shape: 'Polygon' });
 
-    return <FeatureGroup ref={featureGroupRef} />;
+        setCoordinatesModalOpen(false);
+    };
+
+    useEffect(() => {
+        if (!map?.pm) return;
+
+        L.PM.setOptIn(true);
+        const drawnItems = drawnRef.current;
+        map.addLayer(drawnItems);
+        _drawnItems = drawnItems;
+
+        if (!customControlAddedRef.current && map.pm.Toolbar) {
+            map.pm.Toolbar.createCustomControl({
+                name: 'AddZoneWithOptions',
+                block: 'edit',
+                title: 'Add Zone (Draw or Coordinates)',
+                onClick: openInputTypeModal,
+                className: 'control-icon leaflet-pm-icon-polygon',
+                toggle: false,
+            });
+            customControlAddedRef.current = true;
+        }
+
+        map.pm.addControls({
+            position: 'topright',
+            drawPolygon: false,
+            editMode: true,
+            dragMode: true,
+            cutPolygon: false,
+            removalMode: true,
+            drawCircle: false,
+            drawRectangle: false,
+            drawPolyline: false,
+            drawMarker: false,
+            drawCircleMarker: false,
+            drawText: false,
+            rotateMode: true,
+        });
+
+
+
+        const handlePmCreate = (e: any) => {
+            const layer = e.layer;
+            layer.options.pmIgnore = false;
+            L.PM.reInitLayer(layer);
+            drawnItems.addLayer(layer);
+
+            const index = drawnItems.getLayers().length - 1;
+
+            const svgElement = (layer as any)._path as SVGPathElement;
+            if (svgElement) {
+                svgElement.setAttribute('data-test-id', `poly-${index}`);
+            }
+        };
+
+        const handlePmRemove = (e: any) => {
+            if (e?.layer && drawnItems.hasLayer(e.layer)) {
+                drawnItems.removeLayer(e.layer);
+            }
+        };
+
+        map.on('pm:create', handlePmCreate);
+        map.on('pm:remove', handlePmRemove);
+
+
+    }, [map, openInputTypeModal]);
+
+    return (
+        <>
+            <InputTypeSelectionDialog
+                open={isInputTypeModalOpen}
+                onClose={() => setInputTypeModalOpen(false)}
+                onDrawOnMap={handleDrawOnMap}
+                onEnterCoordinates={handleEnterCoordinates}
+            />
+            <CoordinatesModal
+                open={isCoordinatesModalOpen}
+                onClose={() => setCoordinatesModalOpen(false)}
+                onSubmit={handleCoordinatesSubmit}
+            />
+        </>
+    );
 };

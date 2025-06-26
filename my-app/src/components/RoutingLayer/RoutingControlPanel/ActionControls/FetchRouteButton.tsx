@@ -12,6 +12,7 @@ export const FetchRouteButton: React.FC = () => {
             onClick={() => fetchRoute()}
             disabled={loading}
             startIcon={loading ? <CircularProgress size={20} color="inherit" /> : null}
+            id='fetch-route-button'
         >
             {loading ? 'Fetching…' : 'Fetch Route'}
         </Button>

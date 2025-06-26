@@ -1,19 +1,13 @@
-// src/components/CoordinatesModal.tsx
-import { type FC, useState, useEffect } from 'react'
+import { type FC, useState, useCallback } from 'react'
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography } from '@mui/material'
+import CancelIcon from '@mui/icons-material/Cancel'
 import { CoordinateRows } from './CoordinateRows'
-import {
-    Add as AddIcon,
-    Delete as DeleteIcon,
-    Cancel as CancelIcon,
-} from '@mui/icons-material'
-
-export type LatLng = { lat: number; lng: number }
+import type { LatLngLiteral } from 'leaflet'
 
 interface CoordinatesModalProps {
     open: boolean
     onClose: () => void
-    onSubmit: (coords: LatLng[]) => void
+    onSubmit: (coords: LatLngLiteral[]) => void
 }
 
 export const CoordinatesModal: FC<CoordinatesModalProps> = ({ open, onClose, onSubmit }) => {
@@ -23,44 +17,31 @@ export const CoordinatesModal: FC<CoordinatesModalProps> = ({ open, onClose, onS
         { lat: '', lng: '' },
     ])
 
-    const [errors, setErrors] = useState<{ lat?: string; lng?: string }[]>([])
+    const handleChange = useCallback((index: number, field: 'lat' | 'lng', value: string) => {
+        setRows(current =>
+            current.map((row, i) => (i === index ? { ...row, [field]: value } : row))
+        )
+    }, [])
 
-    const [isValid, setIsValid] = useState(false)
+    const handleAdd = useCallback(() => {
+        setRows(current => [...current, { lat: '', lng: '' }])
+    }, [])
 
-    useEffect(() => {
-        const newErrs = rows.map(({ lat, lng }) => {
-            const inputError: { lat?: string; lng?: string } = {}
-            const ltn = parseFloat(lat)
-            if (isNaN(ltn) || ltn < -90 || ltn > 90) inputError.lat = 'Must be between –90 and 90'
-            const lgn = parseFloat(lng)
-            if (isNaN(lgn) || lgn < -180 || lgn > 180) inputError.lng = 'Must be between –180 and 180'
-            return inputError
+    const handleRemove = useCallback((index: number) => {
+        setRows(current => current.filter((_, i) => i !== index))
+    }, [])
+
+    const isValid =
+        rows.length >= 3 &&
+        rows.every(({ lat, lng }) => {
+            const nl = parseFloat(lat)
+            const ng = parseFloat(lng)
+            return !isNaN(nl) && nl >= -90 && nl <= 90 && !isNaN(ng) && ng >= -180 && ng <= 180
         })
-
-        setErrors(newErrs)
-        setIsValid(newErrs.every(err => !err.lat && !err.lng) && rows.length >= 3)
-    }, [rows])
-
-    const handleChange = (idx: number, field: 'lat' | 'lng', value: string) => {
-        const copy = [...rows]
-        copy[idx][field] = value
-        setRows(copy)
-    }
-
-    const handleAdd = () => setRows(r => [...r, { lat: '', lng: '' }])
-    const handleRemove = (idx: number) => {
-        if (rows.length <= 3) return
-        setRows(r => r.filter((_, i) => i !== idx))
-    }
 
     const handleCreate = () => {
         if (!isValid) return
-        const parsed: LatLng[] = rows.map(r => ({
-            lat: parseFloat(r.lat),
-            lng: parseFloat(r.lng),
-        }))
-        onSubmit(parsed)
-        // reset for next time
+        onSubmit(rows.map(r => ({ lat: parseFloat(r.lat), lng: parseFloat(r.lng) })))
         setRows([
             { lat: '', lng: '' },
             { lat: '', lng: '' },
@@ -75,15 +56,27 @@ export const CoordinatesModal: FC<CoordinatesModalProps> = ({ open, onClose, onS
                 <Typography variant="body2" color="text.secondary" gutterBottom>
                     Enter at least three latitude/longitude pairs.
                 </Typography>
-
-                <CoordinateRows rows={rows} errors={errors} onChange={handleChange} onRemove={handleRemove} onAdd={handleAdd} />
+                <CoordinateRows
+                    rows={rows}
+                    onChange={handleChange}
+                    onRemove={handleRemove}
+                    onAdd={handleAdd}
+                />
             </DialogContent>
-
             <DialogActions>
-                <Button startIcon={<CancelIcon />} onClick={onClose}>
+                <Button
+                    id="coordinates-cancel-button"
+                    startIcon={<CancelIcon />}
+                    onClick={onClose}
+                >
                     Cancel
                 </Button>
-                <Button variant="contained" onClick={handleCreate} disabled={!isValid}>
+                <Button
+                    id="coordinates-create-button"
+                    variant="contained"
+                    onClick={handleCreate}
+                    disabled={!isValid}
+                >
                     Create
                 </Button>
             </DialogActions>
