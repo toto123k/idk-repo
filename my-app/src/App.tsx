@@ -4,6 +4,7 @@ import { ThemeProvider, createTheme, CssBaseline } from '@mui/material'
 import { MapShell } from './components/MapShell/MapShell'
 import { RoutingLayer } from './components/RoutingLayer/RoutingLayer'
 import type { LocationData } from './types/types'
+import { initialSource, initialTarget } from './constants/initalLocations'
 
 const theme = createTheme({
   palette: {
@@ -11,15 +12,12 @@ const theme = createTheme({
   },
 });
 
-const source: LocationData["position"] = { lat: 32.0853, lng: 34.7818 }
-const target: LocationData["position"] = { lat: 31.7683, lng: 35.2137 }
-
 export const App = () => {
   const center = useMemo<LocationData["position"]>(
     () => {
       return {
-        lat: (source.lat + target.lat) / 2,
-        lng: (source.lng + target.lng) / 2,
+        lat: (initialSource.lat + initialTarget.lat) / 2,
+        lng: (initialSource.lng + initialTarget.lng) / 2,
       }
     },
     []
@@ -36,7 +34,7 @@ export const App = () => {
       />
 
       <MapShell center={center} zoom={9}>
-        <RoutingLayer initialSource={source} initialTarget={target} />
+        <RoutingLayer />
       </MapShell>
     </ThemeProvider>
   )

@@ -1,9 +1,10 @@
 import { atom } from 'jotai'
 import { api } from '../api/api'
 import type { LatLngLiteral } from 'leaflet'
+import { initialSource, initialTarget } from '../constants/initalLocations'
 
-export const srcPosAtom = atom<LatLngLiteral>({ lat: 0, lng: 0 })
-export const tgtPosAtom = atom<LatLngLiteral>({ lat: 0, lng: 0 })
+export const srcPosAtom = atom<LatLngLiteral>(initialSource)
+export const tgtPosAtom = atom<LatLngLiteral>(initialTarget)
 export const routeAtom = atom<LatLngLiteral[] | null>(null)
 export const loadingAtom = atom<boolean>(false)
 export const errorAtom = atom<string | null>(null)
