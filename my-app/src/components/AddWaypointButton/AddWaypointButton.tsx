@@ -11,10 +11,12 @@ const boxStyles = {
     backgroundColor: 'white',
     borderRadius: '4px',
     boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
+    display: "flex",
+    justifyContent: "center"
 };
 
 const buttonStyles = {
-    minWidth: 'auto',
+    minWidth: '100%',
 };
 
 export const AddWaypointButton = () => {
@@ -44,6 +46,7 @@ export const AddWaypointButton = () => {
                     startIcon={<AddLocationAltIcon />}
                     sx={buttonStyles}
                     disabled={!sourcePosition || !targetPosition}
+                    id='add-waypoint-button'
                 >
                     Add Waypoint
                 </Button>

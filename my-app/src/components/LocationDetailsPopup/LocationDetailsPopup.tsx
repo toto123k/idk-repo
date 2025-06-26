@@ -2,12 +2,10 @@ import { Box, Chip, Divider, IconButton, Stack, Typography } from '@mui/material
 import { Delete } from '@mui/icons-material'
 import { fromLatLon } from 'utm'
 import { useSetAtom } from 'jotai'
-import { type LatLngLiteral } from 'leaflet'
 import { waypointsAtom } from '../../state/routingAtoms'
 import { type LocationData } from '../../types/types'
 
 interface Props extends LocationData {
-    onClose: () => void
 }
 
 const containerSx = {

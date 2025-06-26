@@ -8,8 +8,6 @@ interface Props extends LocationData {
     onMarkerEndDrag?: (updated: LocationData["position"]) => void
 }
 
-
-
 export const LocationMarker: React.FC<Props> = ({
     type,
     position,
@@ -34,8 +32,18 @@ export const LocationMarker: React.FC<Props> = ({
             position={position}
             icon={createDivIcon({ type, order })}
             draggable={true}
-            ref={markerRef}
+            ref={(marker) => {
+                if (marker) {
+                    markerRef.current = marker
+
+                    marker.once('add', () => {
+                        const element = marker.getElement()
+                        if (element) element.setAttribute('data-testid', `location-marker-${type}${type === "waypoint" ? "-" + order : ""}`)
+                    })
+                }
+            }}
             eventHandlers={{ dragend: onDragEnd }}
+
         >
             <Popup>
                 <LocationDetailsPopup position={currentPosition} type={type} order={order} />

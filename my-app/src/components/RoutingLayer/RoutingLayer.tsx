@@ -1,4 +1,3 @@
-// components/RoutingLayer/RoutingLayer.tsx
 import { useAtom, useAtomValue } from 'jotai'
 import { Polyline } from 'react-leaflet'
 import { useRouteToast } from '../../hooks/useRouteToast'
