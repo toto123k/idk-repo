@@ -1,13 +1,13 @@
 import { atom } from 'jotai'
-import { api } from '../api/api'
-import type { LatLngLiteral } from 'leaflet'
 import { splitAtom } from 'jotai/utils'
+import type { LatLngLiteral } from 'leaflet'
+import { api } from '../api/api'
+import { initialSource, initialTarget } from '../constants/initalLocations'
 import { extractAvoidZones } from '../utils/geo'
+import { zonesGeoJSONAtom } from './drawingItemsAtom'
 
 export const sourcePositionAtom = atom<LatLngLiteral>(initialSource)
 export const targetPositionAtom = atom<LatLngLiteral>(initialTarget)
-import { initialSource, initialTarget } from '../constants/initalLocations'
-import { getUpdatedZonesGeoJSON } from './drawingItemsAtom'
 
 
 export const routeAtom = atom<LatLngLiteral[] | null>(null)
@@ -37,7 +37,7 @@ export const fetchRouteAtom = atom<null, [FetchOptionsExample], void>(
             return
         }
 
-        const geojson = getUpdatedZonesGeoJSON()
+        const geojson = get(zonesGeoJSONAtom)
         console.log(geojson)
         const avoidZones: LatLngLiteral[][] = extractAvoidZones(geojson)
 

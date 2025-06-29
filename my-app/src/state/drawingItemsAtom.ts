@@ -1,12 +1,7 @@
-import { atom, createStore } from 'jotai';
-import * as L from 'leaflet';
-import type { FeatureGroup } from 'leaflet';
+import type { FeatureCollection } from "geojson";
+import { atom } from "jotai";
 
-export const drawnItemsAtom = atom<FeatureGroup>(new L.FeatureGroup());
-
-export const polygonStore = createStore();
-
-export function getUpdatedZonesGeoJSON(): GeoJSON.FeatureCollection {
-    const drawnItems = polygonStore.get(drawnItemsAtom);
-    return drawnItems.toGeoJSON() as GeoJSON.FeatureCollection;
-}
+export const zonesGeoJSONAtom = atom<FeatureCollection>({
+  type: "FeatureCollection",
+  features: [],
+});
