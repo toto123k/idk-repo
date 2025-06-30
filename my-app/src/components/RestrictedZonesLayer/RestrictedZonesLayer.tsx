@@ -10,11 +10,12 @@ import {
   Typography,
 } from "@mui/material";
 import { useAtom } from "jotai";
-import "leaflet";
 import type { LatLngLiteral } from "leaflet";
 import * as L from "leaflet";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { FeatureGroup, useMap } from "react-leaflet";
+import { FeatureGroup, Polygon, Popup, useMap } from "react-leaflet";
+
+import GeometryUtil from "leaflet-geometryutil";
 import { zonesGeoJSONAtom } from "../../state/drawingItemsAtom";
 import { CoordinatesModal } from "../CoordinatesModal/CoordinatesModal";
 
@@ -66,15 +67,18 @@ export const RestrictedZonesLayer = () => {
   const map = useMap();
   const featureGroupRef = useRef<L.FeatureGroup>(null);
   const [, setZonesGeoJSON] = useAtom(zonesGeoJSONAtom);
+  const [selectedPolygonIndex, setSelectedPolygonIndex] = useState<
+    number | null
+  >(null);
 
   const [isInputTypeModalOpen, setInputTypeModalOpen] = useState(false);
   const [isCoordinatesModalOpen, setCoordinatesModalOpen] = useState(false);
+  const [polygons, setPolygons] = useState<LatLngLiteral[][]>([]);
   const customControlAddedRef = useRef(false);
 
   const syncStateWithMap = useCallback(() => {
-    const featureGroup = featureGroupRef.current;
-    if (!featureGroup) return;
-    const geojson = featureGroup.toGeoJSON();
+    if (!featureGroupRef.current) return;
+    const geojson = featureGroupRef.current.toGeoJSON();
     setZonesGeoJSON(geojson as GeoJSON.FeatureCollection);
   }, [setZonesGeoJSON]);
 
@@ -92,13 +96,12 @@ export const RestrictedZonesLayer = () => {
 
   const handleCoordinatesSubmit = (coords: LatLngLiteral[]) => {
     setCoordinatesModalOpen(false);
-    if (!featureGroupRef.current || coords.length < 3) return;
+    if (coords.length < 3) return;
+    setPolygons((prev) => [...prev, coords]);
+  };
 
-    const polygon = L.polygon(coords, { pmIgnore: false });
-    polygon.pm.enable();
-    polygon.pm.setOptions({ draggable: true });
-    featureGroupRef.current.addLayer(polygon);
-    syncStateWithMap();
+  const handleRemovePolygon = (index: number) => {
+    setPolygons((prev) => prev.filter((_, i) => i !== index));
   };
 
   useEffect(() => {
@@ -137,34 +140,77 @@ export const RestrictedZonesLayer = () => {
     });
 
     const onCreate = (e: any) => {
-      const layer = e.layer;
-      layer.options.pmIgnore = false;
-      L.PM.reInitLayer(layer);
-      drawnItems.addLayer(layer);
-      syncStateWithMap();
+      // get the outer bound coordinates of the drawn polygon
+      const latlngs = e.layer.getLatLngs()[0];
+      if (!latlngs || latlngs.length < 3) return;
+
+      map.removeLayer(e.layer);
+
+      const coords = latlngs.map((p: any) => ({ lat: p.lat, lng: p.lng }));
+      setPolygons((prev) => [...prev, coords]);
     };
 
-    const onRemove = (e: any) => {
-      drawnItems.removeLayer(e.layer);
+    const onRemove = () => {
       syncStateWithMap();
     };
 
     map.on("pm:create", onCreate);
     map.on("pm:remove", onRemove);
+
+    return () => {
+      map.off("pm:create", onCreate);
+      map.off("pm:remove", onRemove);
+    };
   }, [map, syncStateWithMap]);
 
   return (
     <>
       <FeatureGroup
         ref={featureGroupRef}
+        pmIgnore={false}
         eventHandlers={{
           "pm:edit": syncStateWithMap,
           "pm:cut": syncStateWithMap,
           "pm:rotateend": syncStateWithMap,
           "pm:dragend": syncStateWithMap,
         }}
-        pmIgnore={false}
-      />
+      >
+        {polygons.map((coords, index) => {
+          const length = (() => {
+            try {
+              const latlngs = coords.map((p) => L.latLng(p.lat, p.lng));
+              const meters = GeometryUtil.accumulatedLengths(latlngs).reduce(
+                (sum, length) => sum + length
+              );
+              return (meters / 10000).toFixed(2);
+            } catch {
+              return "N/A";
+            }
+          })();
+
+          return (
+            <Polygon
+              key={index}
+              positions={coords}
+              pathOptions={{ color: "red" }}
+              eventHandlers={{
+                click: () => setSelectedPolygonIndex(index),
+              }}
+            >
+              {selectedPolygonIndex === index && (
+                <Popup
+                  eventHandlers={{
+                    remove: () => setSelectedPolygonIndex(null),
+                  }}
+                >
+                  <strong>Length:</strong> {length} meters
+                </Popup>
+              )}
+            </Polygon>
+          );
+        })}
+      </FeatureGroup>
+
       <InputTypeSelectionDialog
         open={isInputTypeModalOpen}
         onClose={() => setInputTypeModalOpen(false)}
