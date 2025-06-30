@@ -10,12 +10,11 @@ import {
   Typography,
 } from "@mui/material";
 import { useAtom } from "jotai";
+import "leaflet";
 import type { LatLngLiteral } from "leaflet";
 import * as L from "leaflet";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { FeatureGroup, Polygon, Popup, useMap } from "react-leaflet";
-
-import GeometryUtil from "leaflet-geometryutil";
+import { FeatureGroup, Polygon, useMap } from "react-leaflet";
 import { zonesGeoJSONAtom } from "../../state/drawingItemsAtom";
 import { CoordinatesModal } from "../CoordinatesModal/CoordinatesModal";
 
@@ -67,9 +66,6 @@ export const RestrictedZonesLayer = () => {
   const map = useMap();
   const featureGroupRef = useRef<L.FeatureGroup>(null);
   const [, setZonesGeoJSON] = useAtom(zonesGeoJSONAtom);
-  const [selectedPolygonIndex, setSelectedPolygonIndex] = useState<
-    number | null
-  >(null);
 
   const [isInputTypeModalOpen, setInputTypeModalOpen] = useState(false);
   const [isCoordinatesModalOpen, setCoordinatesModalOpen] = useState(false);
@@ -78,6 +74,7 @@ export const RestrictedZonesLayer = () => {
 
   const syncStateWithMap = useCallback(() => {
     if (!featureGroupRef.current) return;
+
     const geojson = featureGroupRef.current.toGeoJSON();
     setZonesGeoJSON(geojson as GeoJSON.FeatureCollection);
   }, [setZonesGeoJSON]);
@@ -97,11 +94,8 @@ export const RestrictedZonesLayer = () => {
   const handleCoordinatesSubmit = (coords: LatLngLiteral[]) => {
     setCoordinatesModalOpen(false);
     if (coords.length < 3) return;
-    setPolygons((prev) => [...prev, coords]);
-  };
 
-  const handleRemovePolygon = (index: number) => {
-    setPolygons((prev) => prev.filter((_, i) => i !== index));
+    setPolygons((prev) => [...prev, coords]);
   };
 
   useEffect(() => {
@@ -111,6 +105,7 @@ export const RestrictedZonesLayer = () => {
     map.addLayer(drawnItems);
     L.PM.setOptIn(true);
 
+    // custom control
     if (!customControlAddedRef.current && map.pm.Toolbar) {
       map.pm.Toolbar.createCustomControl({
         name: "AddZoneWithOptions",
@@ -140,17 +135,20 @@ export const RestrictedZonesLayer = () => {
     });
 
     const onCreate = (e: any) => {
-      // get the outer bound coordinates of the drawn polygon
+      // pull off the layer so it doesn’t stay in the map
+      map.removeLayer(e.layer);
+
       const latlngs = e.layer.getLatLngs()[0];
       if (!latlngs || latlngs.length < 3) return;
-
-      map.removeLayer(e.layer);
 
       const coords = latlngs.map((p: any) => ({ lat: p.lat, lng: p.lng }));
       setPolygons((prev) => [...prev, coords]);
     };
 
-    const onRemove = () => {
+    const onRemove = (e: any) => {
+      // also remove it from our FeatureGroup
+      featureGroupRef.current?.removeLayer(e.layer);
+      // now re‐sync
       syncStateWithMap();
     };
 
@@ -163,6 +161,10 @@ export const RestrictedZonesLayer = () => {
     };
   }, [map, syncStateWithMap]);
 
+  useEffect(() => {
+    syncStateWithMap();
+  }, [polygons, syncStateWithMap]);
+
   return (
     <>
       <FeatureGroup
@@ -173,42 +175,18 @@ export const RestrictedZonesLayer = () => {
           "pm:cut": syncStateWithMap,
           "pm:rotateend": syncStateWithMap,
           "pm:dragend": syncStateWithMap,
+          remove: syncStateWithMap,
         }}
       >
-        {polygons.map((coords, index) => {
-          const length = (() => {
-            try {
-              const latlngs = coords.map((p) => L.latLng(p.lat, p.lng));
-              const meters = GeometryUtil.accumulatedLengths(latlngs).reduce(
-                (sum, length) => sum + length
-              );
-              return (meters / 10000).toFixed(2);
-            } catch {
-              return "N/A";
-            }
-          })();
-
-          return (
-            <Polygon
-              key={index}
-              positions={coords}
-              pathOptions={{ color: "red" }}
-              eventHandlers={{
-                click: () => setSelectedPolygonIndex(index),
-              }}
-            >
-              {selectedPolygonIndex === index && (
-                <Popup
-                  eventHandlers={{
-                    remove: () => setSelectedPolygonIndex(null),
-                  }}
-                >
-                  <strong>Length:</strong> {length} meters
-                </Popup>
-              )}
-            </Polygon>
-          );
-        })}
+        {" "}
+        {polygons.map((coords, index) => (
+          <Polygon
+            key={index}
+            positions={coords}
+            pathOptions={{ color: "red" }}
+            pmIgnore={false}
+          />
+        ))}
       </FeatureGroup>
 
       <InputTypeSelectionDialog
